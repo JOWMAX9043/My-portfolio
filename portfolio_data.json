@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-14T07:54:53.413Z",
+  "lastUpdated": "2026-10-14T07:56:37.965Z",
   "fxRate": 33.58,
   "benchmarks": {
     "sp500": 18.5,
@@ -61,8 +61,8 @@
       "id": 101,
       "symbol": "NVDA",
       "date": "2026-09-15",
-      "buyPrice": 120,
-      "amountUSD": 321.7,
+      "buyPrice": 149.58,
+      "amountUSD": 653.28,
       "fxRate": 33.5,
       "note": "ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)"
     },
