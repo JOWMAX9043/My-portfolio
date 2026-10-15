@@ -43,12 +43,12 @@
         <div>
           <div class="flex items-center justify-between gap-2">
             <span class="text-[11px] text-slate-400">ค่าเงิน USD/THB (เรียลไทม์)</span>
-            <span id="fxStatus" class="text-[10px] text-emerald-400">● Live</span>
+            <span id="fxStatus" class="text-[10px] text-emerald-400">● Dime! 33.52</span>
           </div>
           <div class="flex items-center gap-1.5 mt-0.5">
             <span class="text-emerald-400 font-bold text-base">฿</span>
             <input type="number" id="fxRateInput" step="0.01" class="w-20 px-2 py-0.5 rounded text-sm font-bold text-emerald-400" onchange="manualFxUpdate()">
-            <button onclick="fetchExchangeRate()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-white transition" title="ดึงค่าเงินดอลลาร์ล่าสุด">
+            <button onclick="fetchExchangeRate()" class="text-xs bg-slate-700 hover:bg-slate-600 px-2 py-1 rounded text-white transition" title="ดึงค่าเงินดอลลาร์เรียลไทม์ล่าสุด">
               🔄
             </button>
           </div>
@@ -79,7 +79,7 @@
     <div class="card p-4 relative overflow-hidden">
       <div class="flex justify-between items-start">
         <p class="text-slate-400 text-xs">มูลค่าพอร์ตรวม (Market Value)</p>
-        <span class="text-xs bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded">Portfolio</span>
+        <span class="text-xs bg-sky-500/10 text-sky-400 px-2 py-0.5 rounded">10 สินทรัพย์</span>
       </div>
       <h2 id="totalValueUSD" class="text-2xl font-bold text-white mt-1.5">$0.00</h2>
       <p id="totalValueTHB" class="text-sm text-sky-400 mt-0.5 font-medium">≈ ฿0.00</p>
@@ -189,7 +189,10 @@
           <h3 class="font-bold text-base text-white">🥧 สัดส่วนพอร์ตจริง vs เป้าหมายที่ตั้งไว้ (Portfolio Allocation)</h3>
           <p class="text-xs text-slate-400">ผลรวมสัดส่วนเป้าหมายปัจจุบัน: <span id="targetWeightSum" class="font-bold text-sky-400">100.00%</span></p>
         </div>
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2">
+          <button onclick="resetToDimeDefault()" class="bg-slate-700 hover:bg-slate-600 text-amber-300 text-xs font-medium px-3 py-1.5 rounded-lg transition" title="รีเซ็ตข้อมูลกลับเป็นยอดตามภาพ Dime! ล่าสุด">
+            🔄 รีเซ็ตเป็นค่า Dime! (14 ต.ค.)
+          </button>
           <button onclick="openAddStockModal()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
             ➕ เพิ่มหุ้นใหม่
           </button>
@@ -205,7 +208,7 @@
   <div class="card p-5 mb-6 overflow-x-auto">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
       <div>
-        <h3 class="font-bold text-lg text-white">📋 ตาราง Recheck สัดส่วนหุ้น & ต้นทุนปัจจุบัน</h3>
+        <h3 class="font-bold text-lg text-white">📋 ตาราง Recheck สัดส่วนหุ้น & ต้นทุนปัจจุบัน (10 หุ้น)</h3>
         <p class="text-xs text-slate-400">
           💡 คลิกแก้ <b>ชื่อหุ้น, ราคาตลาดปัจจุบัน ($), หรือ เป้าสัดส่วน (%)</b> ในตารางได้เลย ระบบจะคำนวณและจำค่าให้อัตโนมัติ
         </p>
@@ -271,17 +274,17 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs text-slate-400 mb-1">ราคาหุ้นตอนซื้อ ($)</label>
-            <input type="number" id="dcaPrice" step="any" required placeholder="เช่น 135.50" class="w-full px-3 py-2 rounded-lg" oninput="previewDcaShares()">
+            <input type="number" id="dcaPrice" step="any" required placeholder="เช่น 228.52" class="w-full px-3 py-2 rounded-lg" oninput="previewDcaShares()">
           </div>
           <div>
             <label class="block text-xs text-slate-400 mb-1">จำนวนเงินที่ซื้อ ($ USD)</label>
-            <input type="number" id="dcaAmountUSD" step="any" required placeholder="เช่น 300" class="w-full px-3 py-2 rounded-lg" oninput="previewDcaShares()">
+            <input type="number" id="dcaAmountUSD" step="any" required placeholder="เช่น 100.00" class="w-full px-3 py-2 rounded-lg" oninput="previewDcaShares()">
           </div>
         </div>
 
         <div class="bg-slate-900/80 px-3 py-2 rounded-lg border border-slate-800 text-xs flex justify-between items-center">
           <span class="text-slate-400">จำนวนหุ้นที่จะได้รับ:</span>
-          <span id="dcaSharesPreview" class="font-mono font-bold text-emerald-400">0.0000 หุ้น</span>
+          <span id="dcaSharesPreview" class="font-mono font-bold text-emerald-400">0.0000000 หุ้น</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -412,7 +415,7 @@
       <form onsubmit="confirmAddStock(event)" class="space-y-3 text-sm">
         <div>
           <label class="block text-xs text-slate-400 mb-1">ชื่อย่อหุ้น (Ticker Symbol)</label>
-          <input type="text" id="newStockSymbol" required placeholder="เช่น AMZN, TSM, ASML, UBER" class="w-full px-3 py-2 rounded-lg uppercase">
+          <input type="text" id="newStockSymbol" required placeholder="เช่น AMZN, ASML, UBER, NEE" class="w-full px-3 py-2 rounded-lg uppercase">
         </div>
         <div>
           <label class="block text-xs text-slate-400 mb-1">สัดส่วนเป้าหมายในพอร์ต (%)</label>
@@ -432,11 +435,11 @@
 
   <script>
     // =========================================================================
-    // 1. INITIAL PORTFOLIO STATE (พอร์ตตั้งต้นของแม็ก)
+    // 1. INITIAL PORTFOLIO STATE (พอร์ต 10 หุ้นจริงจาก Dime! ณ 14 ต.ค. 69)
     // =========================================================================
     const DEFAULT_STATE = {
       lastUpdated: new Date().toISOString(),
-      fxRate: 33.50,
+      fxRate: 33.52,
       benchmarks: {
         sp500: 18.50,
         sp500Base: 5000,
@@ -446,31 +449,36 @@
         nasdaqCurr: 19584
       },
       stocks: [
-        { symbol: 'NVDA', targetWeight: 32.17, currentPrice: 135.00 },
-        { symbol: 'MSFT', targetWeight: 19.53, currentPrice: 430.00 },
-        { symbol: 'META', targetWeight: 14.98, currentPrice: 590.00 },
-        { symbol: 'GOOGL', targetWeight: 12.42, currentPrice: 175.00 },
-        { symbol: 'PLTR', targetWeight: 6.98,  currentPrice: 42.00 },
-        { symbol: 'SNPS', targetWeight: 5.14,  currentPrice: 520.00 },
-        { symbol: 'SPCX', targetWeight: 3.91,  currentPrice: 28.00 },
-        { symbol: 'NOW',  targetWeight: 3.20,  currentPrice: 930.00 },
-        { symbol: 'EOSE', targetWeight: 1.65,  currentPrice: 3.50 }
+        { symbol: 'NVDA',  targetWeight: 30.69, currentPrice: 228.52 },
+        { symbol: 'MSFT',  targetWeight: 18.99, currentPrice: 543.45 },
+        { symbol: 'META',  targetWeight: 15.21, currentPrice: 762.50 },
+        { symbol: 'GOOGL', targetWeight: 11.96, currentPrice: 353.78 },
+        { symbol: 'PLTR',  targetWeight: 6.67,  currentPrice: 208.67 },
+        { symbol: 'SNPS',  targetWeight: 4.77,  currentPrice: 494.51 },
+        { symbol: 'TSM',   targetWeight: 3.62,  currentPrice: 445.12 },
+        { symbol: 'SPCX',  targetWeight: 3.61,  currentPrice: 156.54 },
+        { symbol: 'NOW',   targetWeight: 3.02,  currentPrice: 138.61 },
+        { symbol: 'EOSE',  targetWeight: 1.45,  currentPrice: 2.32 }
       ],
       transactions: [
-        { id: 101, symbol: 'NVDA', date: '2026-09-15', buyPrice: 120.00, amountUSD: 321.70, fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' },
-        { id: 102, symbol: 'MSFT', date: '2026-09-15', buyPrice: 415.00, amountUSD: 195.30, fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' },
-        { id: 103, symbol: 'META', date: '2026-09-15', buyPrice: 540.00, amountUSD: 149.80, fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' },
-        { id: 104, symbol: 'GOOGL', date: '2026-09-15', buyPrice: 162.00, amountUSD: 124.20, fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' },
-        { id: 105, symbol: 'PLTR', date: '2026-09-15', buyPrice: 36.00,  amountUSD: 69.80,  fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' },
-        { id: 106, symbol: 'SNPS', date: '2026-09-15', buyPrice: 505.00, amountUSD: 51.40,  fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' },
-        { id: 107, symbol: 'SPCX', date: '2026-09-15', buyPrice: 26.50,  amountUSD: 39.10,  fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' },
-        { id: 108, symbol: 'NOW',  date: '2026-09-15', buyPrice: 890.00, amountUSD: 32.00,  fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' },
-        { id: 109, symbol: 'EOSE', date: '2026-09-15', buyPrice: 3.10,   amountUSD: 16.50,  fxRate: 33.50, note: 'ไม้ตั้งต้น (คลิก ✏️ เพื่อแก้หรือลบได้)' }
+        { id: 101, symbol: 'NVDA',  date: '2026-10-14', buyPrice: 149.5844, amountUSD: 653.28, fxRate: 33.52, shares: 4.3672997, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 102, symbol: 'MSFT',  date: '2026-10-14', buyPrice: 427.1848, amountUSD: 485.31, fxRate: 33.52, shares: 1.1360658, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 103, symbol: 'META',  date: '2026-10-14', buyPrice: 605.5790, amountUSD: 392.73, fxRate: 33.52, shares: 0.6485199, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 104, symbol: 'GOOGL', date: '2026-10-14', buyPrice: 206.5883, amountUSD: 227.02, fxRate: 33.52, shares: 1.0989004, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 105, symbol: 'PLTR',  date: '2026-10-14', buyPrice: 153.9858, amountUSD: 160.06, fxRate: 33.52, shares: 1.0394772, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 106, symbol: 'SNPS',  date: '2026-10-14', buyPrice: 381.6880, amountUSD: 119.75, fxRate: 33.52, shares: 0.3137379, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 107, symbol: 'TSM',   date: '2026-10-14', buyPrice: 448.4380, amountUSD: 118.62, fxRate: 33.52, shares: 0.2645182, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 108, symbol: 'SPCX',  date: '2026-10-14', buyPrice: 161.0851, amountUSD: 120.84, fxRate: 33.52, shares: 0.7501623, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 109, symbol: 'NOW',   date: '2026-10-14', buyPrice: 137.2519, amountUSD: 97.31,  fxRate: 33.52, shares: 0.7089883, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' },
+        { id: 110, symbol: 'EOSE',  date: '2026-10-14', buyPrice: 6.4990,   amountUSD: 132.71, fxRate: 33.52, shares: 20.4202970, note: 'ยอดสะสมตั้งต้นจาก Dime! (คลิก ✏️ แก้ไขได้)' }
       ]
     };
 
-    let state = JSON.parse(localStorage.getItem('max_portfolio_cloud_state')) || DEFAULT_STATE;
-    let config = JSON.parse(localStorage.getItem('max_portfolio_cloud_config')) || {
+    const STORAGE_KEY = 'max_portfolio_cloud_dime_v3';
+    const CONFIG_KEY = 'max_portfolio_cloud_config';
+
+    let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(DEFAULT_STATE));
+    let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || {
       ghOwner: '',
       ghRepo: '',
       ghToken: '',
@@ -484,11 +492,19 @@
 
     function saveState(triggerAutoSync = true) {
       state.lastUpdated = new Date().toISOString();
-      localStorage.setItem('max_portfolio_cloud_state', JSON.stringify(state));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       if (triggerAutoSync && config.ghAutoSync && config.ghOwner && config.ghRepo && config.ghToken) {
         syncToGitHub(true);
       } else if (config.ghOwner && config.ghRepo) {
         updateSyncBadge('🟡 มีการแก้ไข (รอเซฟขึ้น GitHub)', 'text-amber-400');
+      }
+    }
+
+    function resetToDimeDefault() {
+      if (confirm('ต้องการรีเซ็ตข้อมูลพอร์ตกลับเป็นยอดตั้งต้น 10 หุ้นจากแอป Dime! (14 ต.ค. 69) ใช่หรือไม่?')) {
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        saveState();
+        renderAll();
       }
     }
 
@@ -533,7 +549,7 @@
         const decoded = JSON.parse(base64ToUtf8(data.content));
         if (decoded && decoded.stocks && decoded.transactions) {
           state = decoded;
-          localStorage.setItem('max_portfolio_cloud_state', JSON.stringify(state));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           renderAll();
           const t = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
           updateSyncBadge(`🟢 ซิงค์จาก GitHub แล้ว (${t} น.)`, 'text-emerald-400');
@@ -565,7 +581,6 @@
       };
 
       try {
-        // 1. Check if file already exists to get its SHA
         let sha = null;
         const getRes = await fetch(`${url}?ref=${branch}`, { headers, cache: 'no-store' });
         if (getRes.ok) {
@@ -573,7 +588,6 @@
           sha = existing.sha;
         }
 
-        // 2. PUT updated state
         const contentEncoded = utf8ToBase64(JSON.stringify(state, null, 2));
         const body = {
           message: `Update portfolio data (${new Date().toLocaleString('th-TH')})`,
@@ -670,6 +684,10 @@
     // =========================================================================
     // 4. PORTFOLIO CALCULATIONS & RENDER
     // =========================================================================
+    function getTxShares(t) {
+      return (typeof t.shares === 'number' && t.shares > 0) ? t.shares : (t.amountUSD / t.buyPrice);
+    }
+
     function calculatePortfolio() {
       let totalCostUSD = 0;
       let totalCostTHB = 0;
@@ -682,7 +700,7 @@
         let costTHB = 0;
 
         txs.forEach(t => {
-          const s = t.amountUSD / t.buyPrice;
+          const s = getTxShares(t);
           shares += s;
           costUSD += t.amountUSD;
           costTHB += t.amountUSD * (t.fxRate || state.fxRate);
@@ -798,12 +816,11 @@
         const pSign = s.profitUSD >= 0 ? '+' : '';
 
         let actionBadge = `<span class="px-2 py-0.5 rounded text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">สมดุลตามแผน ✅</span>`;
-        if (s.weightDiff < -1.0) {
-          // Calculate how many USD needed to reach target weight
+        if (s.weightDiff < -0.5) {
           const neededUSD = ((s.targetWeight / 100) * summary.totalValueUSD) - s.marketValueUSD;
-          actionBadge = `<span class="px-2 py-0.5 rounded text-xs bg-sky-500/20 text-sky-400 border border-sky-500/30">ต่ำกว่าเป้า ${Math.abs(s.weightDiff).toFixed(1)}% (เติม ~$${Math.max(0, neededUSD).toFixed(0)})</span>`;
-        } else if (s.weightDiff > 1.5) {
-          actionBadge = `<span class="px-2 py-0.5 rounded text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30">เกินเป้า +${s.weightDiff.toFixed(1)}%</span>`;
+          actionBadge = `<span class="px-2 py-0.5 rounded text-xs bg-sky-500/20 text-sky-400 border border-sky-500/30">ต่ำกว่าเป้า ${Math.abs(s.weightDiff).toFixed(2)}% (เติม ~$${Math.max(0, neededUSD).toFixed(0)})</span>`;
+        } else if (s.weightDiff > 0.5) {
+          actionBadge = `<span class="px-2 py-0.5 rounded text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30">เกินเป้า +${s.weightDiff.toFixed(2)}%</span>`;
         }
 
         const tr = document.createElement('tr');
@@ -819,8 +836,8 @@
               </button>
             </div>
           </td>
-          <td class="py-2.5 px-2 text-right font-mono">${s.shares.toFixed(4)}</td>
-          <td class="py-2.5 px-2 text-right font-mono text-slate-300">$${s.avgCost.toFixed(2)}</td>
+          <td class="py-2.5 px-2 text-right font-mono text-xs">${s.shares.toFixed(7)}</td>
+          <td class="py-2.5 px-2 text-right font-mono text-slate-300">$${s.avgCost.toFixed(4)}</td>
           <td class="py-2.5 px-2 text-right">
             <input type="number" step="any" value="${s.currentPrice}" 
               class="w-24 px-2 py-1 rounded text-right font-mono text-amber-300 font-semibold"
@@ -829,7 +846,7 @@
           <td class="py-2.5 px-2 text-right font-mono">$${s.costUSD.toFixed(2)}</td>
           <td class="py-2.5 px-2 text-right font-mono">
             <span class="font-semibold text-white">$${s.marketValueUSD.toFixed(2)}</span>
-            <span class="block text-[11px] text-slate-400">฿${(s.marketValueUSD * state.fxRate).toLocaleString('th-TH', { maximumFractionDigits: 0 })}</span>
+            <span class="block text-[11px] text-slate-400">≈ ฿${(s.marketValueUSD * state.fxRate).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </td>
           <td class="py-2.5 px-2 text-right font-mono ${pColor}">
             ${pSign}$${s.profitUSD.toFixed(2)}
@@ -944,7 +961,7 @@
       const price = parseFloat(document.getElementById('dcaPrice').value) || 0;
       const amount = parseFloat(document.getElementById('dcaAmountUSD').value) || 0;
       const shares = price > 0 ? (amount / price) : 0;
-      document.getElementById('dcaSharesPreview').textContent = `${shares.toFixed(4)} หุ้น`;
+      document.getElementById('dcaSharesPreview').textContent = `${shares.toFixed(7)} หุ้น`;
     }
 
     function saveDcaTransaction(e) {
@@ -959,6 +976,8 @@
 
       if (!symbol || !date || buyPrice <= 0 || amountUSD <= 0) return;
 
+      const calculatedShares = amountUSD / buyPrice;
+
       if (editId) {
         const idx = state.transactions.findIndex(t => String(t.id) === String(editId));
         if (idx !== -1) {
@@ -969,6 +988,7 @@
             buyPrice,
             amountUSD,
             fxRate,
+            shares: calculatedShares,
             note
           };
         }
@@ -980,6 +1000,7 @@
           buyPrice,
           amountUSD,
           fxRate,
+          shares: calculatedShares,
           note
         });
       }
@@ -1014,7 +1035,7 @@
       document.getElementById('dcaAmountUSD').value = '';
       document.getElementById('dcaFxRate').value = state.fxRate;
       document.getElementById('dcaNote').value = '';
-      document.getElementById('dcaSharesPreview').textContent = '0.0000 หุ้น';
+      document.getElementById('dcaSharesPreview').textContent = '0.0000000 หุ้น';
       document.getElementById('dcaFormTitle').textContent = '➕ บันทึกไม้ DCA ใหม่';
       document.getElementById('btnSubmitDca').textContent = '✅ บันทึกไม้ DCA';
       document.getElementById('btnCancelEditDca').classList.add('hidden');
@@ -1051,15 +1072,15 @@
       let sumShares = 0;
       filtered.forEach(t => {
         sumUSD += t.amountUSD;
-        sumShares += (t.amountUSD / t.buyPrice);
+        sumShares += getTxShares(t);
       });
       const avgFilteredPrice = sumShares > 0 ? (sumUSD / sumShares) : 0;
 
       document.getElementById('dcaFilterSummary').innerHTML = `
         <div><span class="text-slate-400 block">จำนวนไม้ที่ DCA</span><span class="font-bold text-white text-sm">${filtered.length} ครั้ง</span></div>
         <div><span class="text-slate-400 block">เงินลงทุนสะสม</span><span class="font-bold text-sky-400 text-sm">$${sumUSD.toFixed(2)} (฿${(sumUSD * state.fxRate).toLocaleString('th-TH', { maximumFractionDigits: 0 })})</span></div>
-        <div><span class="text-slate-400 block">จำนวนหุ้นสะสม</span><span class="font-bold text-white text-sm">${sumShares.toFixed(4)} หุ้น</span></div>
-        <div><span class="text-slate-400 block">ต้นทุนเฉลี่ยเฉพาะที่กรอง</span><span class="font-bold text-amber-400 text-sm">${filterSym !== 'ALL' ? '$' + avgFilteredPrice.toFixed(2) : '- (เลือกหุ้นเพื่อดู)'}</span></div>
+        <div><span class="text-slate-400 block">จำนวนหุ้นสะสม</span><span class="font-bold text-white text-sm">${sumShares.toFixed(7)} หุ้น</span></div>
+        <div><span class="text-slate-400 block">ต้นทุนเฉลี่ยเฉพาะที่กรอง</span><span class="font-bold text-amber-400 text-sm">${filterSym !== 'ALL' ? '$' + avgFilteredPrice.toFixed(4) : '- (เลือกหุ้นเพื่อดู)'}</span></div>
       `;
 
       const tbody = document.getElementById('dcaHistoryBody');
@@ -1073,23 +1094,24 @@
       filtered.forEach(t => {
         const stockObj = state.stocks.find(s => s.symbol === t.symbol);
         const currentPrice = stockObj ? stockObj.currentPrice : t.buyPrice;
-        const shares = t.amountUSD / t.buyPrice;
-        const lotReturnPct = ((currentPrice - t.buyPrice) / t.buyPrice) * 100;
-        const lotProfitUSD = (currentPrice - t.buyPrice) * shares;
-        const color = lotReturnPct >= 0 ? 'text-emerald-400' : 'text-rose-400';
-        const sign = lotReturnPct >= 0 ? '+' : '';
+        const shares = getTxShares(t);
+        const lotValueUSD = shares * currentPrice;
+        const lotProfitUSD = lotValueUSD - t.amountUSD;
+        const lotReturnPct = t.amountUSD > 0 ? (lotProfitUSD / t.amountUSD) * 100 : 0;
+        const color = lotProfitUSD >= 0 ? 'text-emerald-400' : 'text-rose-400';
+        const sign = lotProfitUSD >= 0 ? '+' : '';
 
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-800/40 transition';
         tr.innerHTML = `
           <td class="py-2.5 px-2 font-mono text-xs text-slate-300">${t.date}</td>
           <td class="py-2.5 px-2 font-bold text-sky-400">${t.symbol}</td>
-          <td class="py-2.5 px-2 text-right font-mono">$${t.buyPrice.toFixed(2)}</td>
+          <td class="py-2.5 px-2 text-right font-mono">$${t.buyPrice.toFixed(4)}</td>
           <td class="py-2.5 px-2 text-right font-mono">
             $${t.amountUSD.toFixed(2)}
             <span class="block text-[10px] text-slate-400">฿${(t.amountUSD * (t.fxRate || state.fxRate)).toLocaleString('th-TH', { maximumFractionDigits: 0 })} (@${t.fxRate || state.fxRate})</span>
           </td>
-          <td class="py-2.5 px-2 text-right font-mono text-xs">${shares.toFixed(4)}</td>
+          <td class="py-2.5 px-2 text-right font-mono text-xs">${shares.toFixed(7)}</td>
           <td class="py-2.5 px-2 text-right font-mono text-xs ${color}">
             ${sign}$${lotProfitUSD.toFixed(2)}
             <span class="block text-[10px]">(${sign}${lotReturnPct.toFixed(2)}%)</span>
@@ -1240,7 +1262,7 @@
       config.ghAutoSync = document.getElementById('ghAutoSync').checked;
       config.finnhubKey = document.getElementById('finnhubKeyInput').value.trim();
 
-      localStorage.setItem('max_portfolio_cloud_config', JSON.stringify(config));
+      localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
       closeSettingsModal();
 
       if (config.ghOwner && config.ghRepo) {
@@ -1285,11 +1307,9 @@
     document.getElementById('dcaFxRate').value = state.fxRate;
     if (config.ghOwner && config.ghRepo) {
       updateSyncBadge(`🟢 เชื่อมกับ ${config.ghOwner}/${config.ghRepo}`, 'text-emerald-400');
-      // ดึงข้อมูลล่าสุดจาก GitHub อัตโนมัติตอนเปิดเว็บ
       syncFromGitHub(true);
     }
     renderAll();
-    fetchExchangeRate();
   </script>
 </body>
 </html>
