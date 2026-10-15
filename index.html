@@ -2,44 +2,56 @@
 <html lang="th" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Max Portfolio — Minimal Live Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#090d16">
+  <title>Max Portfolio — Smart DCA & Catalyst Tracker</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Inter', 'Prompt', sans-serif; background-color: #090d16; color: #f1f5f9; }
-    .glass { background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(51, 65, 85, 0.45); border-radius: 1rem; backdrop-filter: blur(8px); }
-    input, select { background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 0.5rem; }
-    input:focus, select:focus { outline: none; border-color: #38bdf8; }
-    .tab-active { background-color: #1e293b; color: #38bdf8; border-color: #38bdf8; }
-    .modal-bg { background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(4px); }
+    .glass { background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(51, 65, 85, 0.45); border-radius: 1rem; backdrop-filter: blur(10px); }
+    input, select { background-color: #0f172a; border: 1px solid #334155; color: #f8fafc; border-radius: 0.5rem; transition: all 0.15s; }
+    input:focus, select:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15); }
+    .tab-active { background-color: #1e293b; color: #38bdf8; border-color: #38bdf8; box-shadow: 0 2px 10px rgba(56, 189, 248, 0.12); }
+    .modal-bg { background: rgba(2, 6, 23, 0.82); backdrop-filter: blur(5px); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
   </style>
 </head>
-<body class="p-4 md:p-8 max-w-6xl mx-auto">
+<body class="p-4 md:p-6 lg:p-8 max-w-6xl mx-auto">
 
   <!-- Minimal Header -->
-  <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+  <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
     <div>
       <div class="flex items-center gap-2.5">
-        <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white">Max's US Portfolio</h1>
+        <span class="text-xl">⚡</span>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight bg-gradient-to-r from-white via-sky-200 to-sky-400 bg-clip-text text-transparent">
+          Max's US Growth Portfolio
+        </h1>
         <span id="liveBadge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5">
           <span id="liveDot" class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
-          <span id="liveBadgeText">กำลังดึงราคาล่าสุด...</span>
+          <span id="liveBadgeText">Auto-Syncing...</span>
         </span>
       </div>
       <p id="subStatusText" class="text-xs text-slate-400 mt-1">กำลังเชื่อมต่อตลาดหุ้นสหรัฐฯ และอัตราแลกเปลี่ยน...</p>
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
+      <button onclick="togglePrivacy()" id="btnPrivacy" class="glass hover:bg-slate-800 text-xs px-3 py-2 flex items-center gap-1.5 transition text-slate-300" title="ซ่อน/แสดงจำนวนเงิน (Privacy Mode)">
+        👁️ <span id="privacyText" class="hidden sm:inline">ซ่อนยอดเงิน</span>
+      </button>
       <button onclick="autoUpdateAllMarketData(false)" id="btnRefresh" class="glass hover:bg-slate-800 text-xs px-3 py-2 flex items-center gap-1.5 transition">
-        🔄 ดึงราคาล่าสุดเดี๋ยวนี้
+        🔄 อัปเดตราคา
       </button>
       <button onclick="openDcaModal()" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2 rounded-xl transition shadow-lg shadow-sky-500/15">
         + บันทึก DCA
       </button>
       <button onclick="syncToGitHub(false)" id="btnCloudSave" class="glass hover:bg-slate-800 text-sky-400 text-xs px-3 py-2 flex items-center gap-1 transition" title="บันทึกราคาและข้อมูลล่าสุดขึ้น GitHub">
-        ☁️ เซฟขึ้น Cloud
+        ☁️ เซฟ
       </button>
       <button onclick="openSettingsModal()" class="glass hover:bg-slate-800 text-slate-300 hover:text-white text-xs px-2.5 py-2 transition" title="ตั้งค่า API & GitHub">
         ⚙️
@@ -48,41 +60,51 @@
   </header>
 
   <!-- Progress Bar while fetching live prices -->
-  <div id="fetchProgressContainer" class="w-full bg-slate-800/80 h-1 rounded-full overflow-hidden mb-6 hidden">
+  <div id="fetchProgressContainer" class="w-full bg-slate-800/80 h-1 rounded-full overflow-hidden mb-5 hidden">
     <div id="fetchProgressBar" class="bg-sky-400 h-full transition-all duration-300" style="width: 10%"></div>
   </div>
 
   <!-- 3 Minimal Hero Cards -->
   <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <!-- Card 1: Total Value -->
-    <div class="glass p-5">
-      <div class="flex justify-between items-center text-xs text-slate-400">
-        <span>มูลค่าพอร์ตรวม (Net Worth)</span>
-        <span id="fxDisplay" class="font-mono text-emerald-400">1 USD = ฿33.52</span>
-      </div>
-      <div class="mt-2 flex items-baseline gap-2">
-        <h2 id="totalValueUSD" class="text-3xl font-bold tracking-tight text-white">$0.00</h2>
-        <span id="totalValueTHB" class="text-sm text-sky-400 font-medium">≈ ฿0.00</span>
+    <!-- Card 1: Total Value & Cost -->
+    <div class="glass p-5 flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span>มูลค่าพอร์ตรวม (Net Worth)</span>
+          <span id="fxDisplay" class="font-mono text-emerald-400">1 USD = ฿33.52</span>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <h2 id="totalValueUSD" class="text-3xl font-bold tracking-tight text-white">$0.00</h2>
+          <span id="totalValueTHB" class="text-sm text-sky-400 font-medium">≈ ฿0.00</span>
+        </div>
       </div>
       <div class="mt-3 pt-3 border-t border-slate-800/80 flex justify-between text-xs text-slate-400">
         <span>ต้นทุนสะสม: <b id="totalCostUSD" class="text-slate-200 font-mono">$0.00</b></span>
-        <span id="totalCostTHB" class="font-mono">฿0</span>
+        <span id="totalCostTHB" class="font-mono text-slate-300">฿0</span>
       </div>
     </div>
 
-    <!-- Card 2: Total Profit -->
-    <div class="glass p-5">
-      <div class="flex justify-between items-center text-xs text-slate-400">
-        <span>กำไร/ขาดทุนสุทธิ (Total Return)</span>
-        <span id="lotsCountBadge" class="text-[11px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">10 รายการ</span>
+    <!-- Card 2: Total Profit + FX vs Stock Breakdown -->
+    <div class="glass p-5 flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-center text-xs text-slate-400">
+          <span>กำไรสุทธิ (Stock + FX Breakdown)</span>
+          <span id="lotsCountBadge" class="text-[11px] bg-slate-800 px-2 py-0.5 rounded text-slate-300">10 รายการ</span>
+        </div>
+        <div class="mt-2 flex items-baseline gap-2">
+          <h2 id="totalReturnPct" class="text-3xl font-bold tracking-tight text-emerald-400">+0.00%</h2>
+          <span id="totalReturnUSD" class="text-sm font-mono font-medium text-emerald-400">+$0.00</span>
+        </div>
       </div>
-      <div class="mt-2 flex items-baseline gap-2">
-        <h2 id="totalReturnPct" class="text-3xl font-bold tracking-tight text-emerald-400">+0.00%</h2>
-        <span id="totalReturnUSD" class="text-sm font-mono font-medium text-emerald-400">+$0.00</span>
-      </div>
-      <div class="mt-3 pt-3 border-t border-slate-800/80 flex justify-between text-xs text-slate-400">
-        <span>กำไร/ขาดทุนเงินบาท:</span>
-        <span id="totalReturnTHB" class="font-mono text-slate-200">+฿0.00</span>
+      <div class="mt-3 pt-2.5 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-[11px]">
+        <div class="flex justify-between bg-slate-900/60 px-2 py-1 rounded">
+          <span class="text-slate-400">📈 กำไรหุ้น:</span>
+          <span id="pureStockGainTHB" class="font-mono text-emerald-400">+฿0</span>
+        </div>
+        <div class="flex justify-between bg-slate-900/60 px-2 py-1 rounded">
+          <span class="text-slate-400">💱 ค่าเงิน (FX):</span>
+          <span id="fxImpactTHB" class="font-mono text-slate-300">฿0</span>
+        </div>
       </div>
     </div>
 
@@ -115,44 +137,117 @@
     </div>
   </section>
 
-  <!-- Navigation Tabs -->
-  <div class="flex items-center justify-between mb-4">
-    <div class="flex gap-2">
-      <button onclick="switchTab('portfolio')" id="tabBtnPortfolio" class="tab-active text-xs font-medium px-4 py-2 rounded-xl border border-slate-800 transition">
-        📊 สัดส่วนพอร์ต (10 หุ้น)
+  <!-- Navigation Tabs (5 Minimal Views) -->
+  <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+    <div class="flex flex-wrap gap-1.5">
+      <button onclick="switchTab('portfolio')" id="tabBtnPortfolio" class="tab-active text-xs font-medium px-3.5 py-2 rounded-xl border border-slate-800 transition">
+        📊 พอร์ตหุ้น (10 ตัว)
       </button>
-      <button onclick="switchTab('dca')" id="tabBtnDca" class="text-xs font-medium px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition">
-        📅 ประวัติไม้ DCA แยกรายหุ้น
+      <button onclick="switchTab('smartdca')" id="tabBtnSmartdca" class="text-xs font-medium px-3.5 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition flex items-center gap-1">
+        🧠 Smart DCA & ปฏิทินงบ <span class="text-[10px] bg-sky-500/20 text-sky-400 px-1.5 py-0.2 rounded-full">NEW</span>
       </button>
-      <button onclick="switchTab('chart')" id="tabBtnChart" class="text-xs font-medium px-4 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition">
-        🥧 กราฟสัดส่วน & ดัชนี
+      <button onclick="switchTab('dca')" id="tabBtnDca" class="text-xs font-medium px-3.5 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition">
+        📅 ประวัติ DCA รายไม้
+      </button>
+      <button onclick="switchTab('simulator')" id="tabBtnSimulator" class="text-xs font-medium px-3.5 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition">
+        🔮 จำลองพอร์ต 10 ปี
+      </button>
+      <button onclick="switchTab('chart')" id="tabBtnChart" class="text-xs font-medium px-3.5 py-2 rounded-xl border border-slate-800 text-slate-400 hover:text-white transition">
+        🏷️ ธีมธุรกิจ & กราฟ
       </button>
     </div>
 
-    <div class="hidden sm:flex items-center gap-2 text-xs text-slate-400">
-      <span>ราคาตลาดอัปเดตเองอัตโนมัติ (หรือคลิกที่ตัวเลขเพื่อแก้ไขเองได้)</span>
+    <div class="hidden lg:flex items-center gap-2 text-xs text-slate-400">
+      <span>คลิก 🎯 ที่หุ้นติดลบเพื่อคำนวณจุดถัวเฉลี่ยหลุดดอย</span>
     </div>
   </div>
 
-  <!-- TAB 1: Minimal Portfolio Table -->
+  <!-- ======================================================================= -->
+  <!-- TAB 1: Minimal Portfolio Table + Breakeven Calculator Trigger           -->
+  <!-- ======================================================================= -->
   <div id="tabPortfolio" class="glass overflow-x-auto">
     <table class="w-full text-left border-collapse text-sm">
       <thead>
         <tr class="border-b border-slate-800 text-slate-400 text-[11px] uppercase tracking-wider">
-          <th class="py-3.5 px-4">สินทรัพย์</th>
-          <th class="py-3.5 px-3 text-right">ราคาตลาดล่าสุด (\$)</th>
+          <th class="py-3.5 px-4">สินทรัพย์ & ธีม</th>
+          <th class="py-3.5 px-3 text-right">ราคาล่าสุด ($)</th>
           <th class="py-3.5 px-3 text-right">ต้นทุนเฉลี่ย</th>
           <th class="py-3.5 px-3 text-right">มูลค่าปัจจุบัน</th>
-          <th class="py-3.5 px-3 text-right">กำไร/ขาดทุนรวม</th>
+          <th class="py-3.5 px-3 text-right">กำไร/ขาดทุน & จุดคืนทุน</th>
           <th class="py-3.5 px-4">สัดส่วนจริง vs เป้า (%)</th>
-          <th class="py-3.5 px-3 text-right">คำแนะนำ</th>
+          <th class="py-3.5 px-3 text-right">แอ็กชันด่วน</th>
         </tr>
       </thead>
       <tbody id="portfolioBody" class="divide-y divide-slate-800/60"></tbody>
     </table>
   </div>
 
-  <!-- TAB 2: Minimal DCA History -->
+  <!-- ======================================================================= -->
+  <!-- TAB 2: SMART DCA ALLOCATOR + MONTHLY EARNINGS & CATALYST PLANNER        -->
+  <!-- ======================================================================= -->
+  <div id="tabSmartdca" class="space-y-4 hidden">
+    <!-- Top Control Bar -->
+    <div class="glass p-5">
+      <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            🧮 Smart DCA Allocator — แบ่งเงินลงทุนตามสัดส่วน & วันประกาศงบประจำเดือน
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">
+            ระบบคำนวณกระจายงบ DCA อัตโนมัติ โดยให้น้ำหนักตาม <b>1) หุ้นที่สัดส่วนต่ำกว่าเป้า</b> และ <b>2) Catalyst วันประกาศงบ/แนวโน้มกำไรของเดือนนั้นๆ</b>
+          </p>
+        </div>
+
+        <!-- Budget Input & Mode -->
+        <div class="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+          <div class="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5">
+            <span class="text-xs text-slate-400 mr-2">งบ DCA รอบนี้:</span>
+            <input type="number" id="smartBudgetInput" value="10000" step="any" oninput="renderSmartDca()"
+              class="w-24 bg-transparent border-none text-right font-mono font-bold text-emerald-400 text-sm focus:ring-0">
+            <select id="smartCurrency" onchange="convertSmartBudgetCurrency()" class="ml-2 bg-slate-800 border-none text-xs font-bold text-sky-400 py-1 px-2 rounded-lg">
+              <option value="THB">฿ THB</option>
+              <option value="USD">$ USD</option>
+            </select>
+          </div>
+
+          <select id="smartStrategyMode" onchange="renderSmartDca()" class="text-xs px-3 py-2.5 font-medium text-slate-200">
+            <option value="catalyst">🔥 โหมดผสม: ปรับสัดส่วน + เน้นตัวงบเด่น (Catalyst Boost)</option>
+            <option value="rebalance">⚖️ โหมดดึงสัดส่วน: เติมเฉพาะตัวที่ต่ำกว่าเป้า (Pure Rebalance)</option>
+            <option value="target">🎯 โหมดตามเป้าเป๊ะ: แบ่งตาม % เป้าหมายตั้งต้น (Target Weight)</option>
+          </select>
+
+          <button onclick="executeBatchSmartDca()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-500/15">
+            ⚡ บันทึกเข้าพอร์ตทั้งชุด
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary Strip -->
+      <div id="smartSummaryStrip" class="mt-4 pt-3 border-t border-slate-800/80 flex flex-wrap justify-between items-center gap-2 text-xs text-slate-300"></div>
+    </div>
+
+    <!-- Catalyst & Allocation Table -->
+    <div class="glass overflow-x-auto">
+      <table class="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr class="border-b border-slate-800 text-slate-400 text-[11px] uppercase">
+            <th class="py-3.5 px-4">หุ้น</th>
+            <th class="py-3.5 px-2">สัดส่วนจริง / เป้า</th>
+            <th class="py-3.5 px-3">📅 วันประกาศงบ / วันแนะนำ DCA</th>
+            <th class="py-3.5 px-3">มุมมองงบ & Catalyst เดือนนี้</th>
+            <th class="py-3.5 px-3">เหตุผล / กลยุทธ์การเข้าซื้อ (คลิกแก้ได้)</th>
+            <th class="py-3.5 px-3 text-right">งบที่แนะนำให้ซื้อ</th>
+            <th class="py-3.5 px-3 text-center">บันทึกแยกไม้</th>
+          </tr>
+        </thead>
+        <tbody id="smartDcaBody" class="divide-y divide-slate-800/60"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- TAB 3: Minimal DCA History                                              -->
+  <!-- ======================================================================= -->
   <div id="tabDca" class="glass p-5 hidden">
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
       <div class="flex flex-wrap items-center gap-2">
@@ -175,7 +270,7 @@
             <th class="py-3 px-3 text-right">เงินลงทุน</th>
             <th class="py-3 px-3 text-right">จำนวนหุ้น</th>
             <th class="py-3 px-3 text-right">ผลตอบแทนไม้นี้</th>
-            <th class="py-3 px-3">บันทึก</th>
+            <th class="py-3 px-3">บันทึกเหตุผล / Catalyst</th>
             <th class="py-3 px-2 text-center">จัดการ</th>
           </tr>
         </thead>
@@ -184,23 +279,94 @@
     </div>
   </div>
 
-  <!-- TAB 3: Charts -->
-  <div id="tabChart" class="grid grid-cols-1 lg:grid-cols-3 gap-6 hidden">
-    <div class="glass p-5 lg:col-span-2">
-      <h3 class="text-sm font-semibold text-slate-200 mb-3">เปรียบเทียบสัดส่วนจริง vs เป้าหมาย (%)</h3>
-      <div class="h-64"><canvas id="allocChart"></canvas></div>
-    </div>
-    <div class="glass p-5">
-      <h3 class="text-sm font-semibold text-slate-200 mb-3">ผลตอบแทนเทียบดัชนี (%)</h3>
-      <div class="h-64"><canvas id="benchChart"></canvas></div>
+  <!-- ======================================================================= -->
+  <!-- TAB 4: 10-YEAR WEALTH & CAGR SIMULATOR                                  -->
+  <!-- ======================================================================= -->
+  <div id="tabSimulator" class="space-y-4 hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Controls -->
+      <div class="glass p-5 space-y-4 text-xs">
+        <h3 class="text-sm font-bold text-white flex items-center gap-1.5">🔮 จำลองการเติบโตพอร์ตระยะยาว</h3>
+        <p class="text-slate-400">คำนวณดอกเบี้ยทบต้นจากเงินต้นพอร์ตปัจจุบันของแม็ก ร่วมกับการเติมเงิน DCA ต่อเนื่อง</p>
+
+        <div>
+          <div class="flex justify-between mb-1">
+            <span class="text-slate-300">เงินเติม DCA ต่อเดือน (฿ บาท):</span>
+            <span id="simDcaTHBLabel" class="font-mono font-bold text-sky-400">฿10,000 / เดือน</span>
+          </div>
+          <input type="range" id="simMonthlyTHB" min="0" max="50000" step="1000" value="10000" oninput="renderSimulator()" class="w-full accent-sky-400">
+        </div>
+
+        <div>
+          <div class="flex justify-between mb-1">
+            <span class="text-slate-300">ผลตอบแทนทบต้นต่อปี (CAGR %):</span>
+            <span id="simCagrLabel" class="font-mono font-bold text-emerald-400">20% / ปี</span>
+          </div>
+          <input type="range" id="simCagr" min="5" max="35" step="1" value="20" oninput="renderSimulator()" class="w-full accent-emerald-400">
+        </div>
+
+        <div>
+          <div class="flex justify-between mb-1">
+            <span class="text-slate-300">ระยะเวลาถือครอง (ปี):</span>
+            <span id="simYearsLabel" class="font-mono font-bold text-amber-400">10 ปี</span>
+          </div>
+          <input type="range" id="simYears" min="1" max="20" step="1" value="10" oninput="renderSimulator()" class="w-full accent-amber-400">
+        </div>
+
+        <div class="pt-3 border-t border-slate-800 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-slate-400">เงินต้นตั้งต้นวันนี้:</span>
+            <span id="simStartVal" class="font-mono text-white">฿0</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-400">เงินลงทุนสะสมทั้งหมด:</span>
+            <span id="simTotalPrincipal" class="font-mono text-slate-300">฿0</span>
+          </div>
+          <div class="flex justify-between text-sm pt-1">
+            <span class="font-bold text-sky-400">มูลค่าพอร์ตในอนาคต:</span>
+            <span id="simFinalValue" class="font-mono font-bold text-emerald-400">฿0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projection Chart -->
+      <div class="glass p-5 lg:col-span-2 flex flex-col justify-between">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-xs font-semibold text-slate-300">กราฟเส้นทางความมั่งคั่ง (พอร์ตโตทบต้น vs เงินต้นที่ใส่เข้าไป)</span>
+          <span id="simProfitMultiplier" class="text-xs bg-emerald-500/15 text-emerald-400 px-2.5 py-0.5 rounded-full font-mono">โต 0.0x</span>
+        </div>
+        <div class="h-64"><canvas id="simChart"></canvas></div>
+      </div>
     </div>
   </div>
 
-  <!-- MODAL 1: Quick 1-Click DCA -->
+  <!-- ======================================================================= -->
+  <!-- TAB 5: AI SECTOR & THEME GROUPING + CHARTS                              -->
+  <!-- ======================================================================= -->
+  <div id="tabChart" class="space-y-4 hidden">
+    <!-- Sector Grouping Cards -->
+    <div id="sectorCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+
+    <!-- Bar Charts -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="glass p-5 lg:col-span-2">
+        <h3 class="text-sm font-semibold text-slate-200 mb-3">เปรียบเทียบสัดส่วนจริง vs เป้าหมาย (%)</h3>
+        <div class="h-64"><canvas id="allocChart"></canvas></div>
+      </div>
+      <div class="glass p-5">
+        <h3 class="text-sm font-semibold text-slate-200 mb-3">ผลตอบแทนพอร์ตเทียบดัชนี (%)</h3>
+        <div class="h-64"><canvas id="benchChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 1: Quick 1-Click DCA                                              -->
+  <!-- ======================================================================= -->
   <div id="dcaModal" class="fixed inset-0 modal-bg hidden items-center justify-center z-50 p-4">
     <div class="glass max-w-md w-full p-6 border border-slate-700">
       <div class="flex justify-between items-center mb-4">
-        <h3 id="dcaModalTitle" class="text-base font-bold text-white">⚡ บันทึกไม้ DCA (ดึงราคาอัตโนมัติ)</h3>
+        <h3 id="dcaModalTitle" class="text-base font-bold text-white">⚡ บันทึกไม้ DCA</h3>
         <button onclick="closeDcaModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
       </div>
       <form onsubmit="saveDca(event)" class="space-y-3 text-xs">
@@ -211,7 +377,7 @@
             <select id="dcaSym" onchange="autoFillDcaPrice()" class="w-full px-3 py-2 font-bold text-sky-400"></select>
           </div>
           <div>
-            <label class="text-slate-400 block mb-1">วันที่ซื้อ</label>
+            <label class="text-slate-400 block mb-1">วันที่เข้าซื้อ</label>
             <input type="date" id="dcaDate" required class="w-full px-3 py-2">
           </div>
         </div>
@@ -221,22 +387,22 @@
             <input type="number" id="dcaUSD" step="any" required placeholder="เช่น 50.00" class="w-full px-3 py-2 font-mono text-emerald-400 font-bold" oninput="updateDcaPreview()">
           </div>
           <div>
-            <label class="text-slate-400 block mb-1">ราคาที่ซื้อ ($ / หุ้น)</label>
+            <label class="text-slate-400 block mb-1">ราคาหุ้นตอนซื้อ ($)</label>
             <input type="number" id="dcaPrice" step="any" required class="w-full px-3 py-2 font-mono" oninput="updateDcaPreview()">
           </div>
         </div>
         <div class="bg-slate-900/90 p-2.5 rounded-lg flex justify-between items-center text-slate-300">
-          <span>จำนวนหุ้นที่ได้รับอัตโนมัติ:</span>
+          <span>จำนวนหุ้นที่ได้รับ:</span>
           <span id="dcaSharesCalc" class="font-mono font-bold text-sky-400">0.0000000 หุ้น</span>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-slate-400 block mb-1">เรท USD/THB (อัตโนมัติ)</label>
+            <label class="text-slate-400 block mb-1">เรท USD/THB ตอนแลก</label>
             <input type="number" id="dcaFx" step="any" class="w-full px-3 py-2 font-mono">
           </div>
           <div>
-            <label class="text-slate-400 block mb-1">Note (ไม่บังคับ)</label>
-            <input type="text" id="dcaNote" placeholder="เช่น DCA ประจำเดือน" class="w-full px-3 py-2">
+            <label class="text-slate-400 block mb-1">เหตุผล / Catalyst ที่ซื้อ</label>
+            <input type="text" id="dcaNote" placeholder="เช่น ซื้อดักงบ MSFT คาดโตดี" class="w-full px-3 py-2">
           </div>
         </div>
         <div class="flex justify-end gap-2 pt-3">
@@ -247,7 +413,44 @@
     </div>
   </div>
 
-  <!-- MODAL 2: Benchmark Adjust -->
+  <!-- ======================================================================= -->
+  <!-- MODAL 2: Breakeven & Avg Down Simulator (ตัวคำนวณถัวเฉลี่ยหลุดดอย)       -->
+  <!-- ======================================================================= -->
+  <div id="breakevenModal" class="fixed inset-0 modal-bg hidden items-center justify-center z-50 p-4">
+    <div class="glass max-w-md w-full p-6 border border-slate-700 text-xs space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
+        <h3 id="beTitle" class="text-base font-bold text-sky-400">🎯 คำนวณจุดถัวเฉลี่ย (Breakeven Helper)</h3>
+        <button onclick="closeBreakevenModal()" class="text-slate-400 hover:text-white text-xl">&times;</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 bg-slate-900/80 p-3 rounded-xl">
+        <div>
+          <span class="text-slate-400 block">ต้นทุนเฉลี่ยเดิม:</span>
+          <span id="beOldAvg" class="text-sm font-mono font-bold text-white">$0.00</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block">ราคาตลาดปัจจุบัน:</span>
+          <span id="beCurPrice" class="text-sm font-mono font-bold text-amber-300">$0.00</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-slate-300 block mb-1 font-medium">จำลองใส่เงินซื้อถัวเพิ่ม ($ USD):</label>
+        <input type="number" id="beSimUSD" value="50" step="10" oninput="calcBreakevenSim()" class="w-full px-3 py-2 font-mono text-sm font-bold text-emerald-400">
+      </div>
+
+      <div id="beResultBox" class="bg-sky-950/30 border border-sky-500/30 p-3.5 rounded-xl space-y-2"></div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeBreakevenModal()" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300">ปิด</button>
+        <button id="beActionBtn" class="px-4 py-2 rounded-lg bg-sky-500 text-slate-950 font-bold">⚡ บันทึกซื้อไม้นี้จริง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 3: Benchmark Adjust                                               -->
+  <!-- ======================================================================= -->
   <div id="benchModal" class="fixed inset-0 modal-bg hidden items-center justify-center z-50 p-4">
     <div class="glass max-w-sm w-full p-6 border border-slate-700 text-xs space-y-3">
       <div class="flex justify-between items-center">
@@ -268,7 +471,9 @@
     </div>
   </div>
 
-  <!-- MODAL 3: Cloud & Settings -->
+  <!-- ======================================================================= -->
+  <!-- MODAL 4: Cloud & Settings                                               -->
+  <!-- ======================================================================= -->
   <div id="settingsModal" class="fixed inset-0 modal-bg hidden items-center justify-center z-50 p-4">
     <div class="glass max-w-md w-full p-6 border border-slate-700 text-xs space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-2.5">
@@ -277,7 +482,7 @@
       </div>
 
       <div class="bg-sky-500/10 border border-sky-500/20 p-3 rounded-lg text-slate-300 leading-relaxed">
-        💡 <b>ทริคดึงราคาไวใน 1 วินาที:</b> เว็บมีระบบดึงราคาฟรีอัตโนมัติให้แล้ว แต่ถ้าอยากให้ดึงไวและเสถียร 100% แนะนำใส่ <b>Finnhub API Key</b> (สมัครฟรี 30 วินาทีที่ <a href="https://finnhub.io" target="_blank" class="text-sky-400 underline">finnhub.io</a>) ทิ้งไว้ครั้งเดียวครับ
+        💡 เว็บมีระบบดึงราคาฟรีอัตโนมัติให้แล้ว แต่ถ้าอยากให้ดึงไวใน 1 วินาที แนะนำใส่ <b>Finnhub API Key</b> (รับฟรีที่ <a href="https://finnhub.io" target="_blank" class="text-sky-400 underline">finnhub.io</a>) ทิ้งไว้ครั้งเดียวครับ
       </div>
 
       <div>
@@ -306,7 +511,7 @@
 
       <div class="pt-2 border-t border-slate-800 flex flex-wrap justify-between gap-2">
         <div class="flex gap-1.5">
-          <button onclick="resetToDimeDefault()" class="px-2.5 py-1.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">🔄 รีเซ็ตต้นทุน Dime!</button>
+          <button onclick="resetToDimeDefault()" class="px-2.5 py-1.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">🔄 รีเซ็ตพอร์ตตั้งต้น</button>
           <button onclick="addNewStockPrompt()" class="px-2.5 py-1.5 rounded bg-slate-800 text-sky-400">+ เพิ่มหุ้น</button>
           <button onclick="exportData()" class="px-2.5 py-1.5 rounded bg-slate-800 text-slate-300">💾 Backup</button>
         </div>
@@ -317,22 +522,23 @@
 
   <script>
     // =========================================================================
-    // 1. DEFAULT STATE (ต้นทุนและจำนวนหุ้นจาก Dime! + รองรับราคาตลาดสด)
+    // 1. DEFAULT STATE (10 หุ้นจริง + ข้อมูล Catalyst วันประกาศงบ & ธีมธุรกิจ)
     // =========================================================================
     const DEFAULT_STATE = {
       fxRate: 33.52,
+      privacyMode: false,
       benchmarks: { sp500: 18.50, nasdaq: 22.40, spyPrice: 0, qqqPrice: 0 },
       stocks: [
-        { symbol: 'NVDA',  targetWeight: 30.69, currentPrice: 228.52, dayChangePct: 0 },
-        { symbol: 'MSFT',  targetWeight: 18.99, currentPrice: 543.45, dayChangePct: 0 },
-        { symbol: 'META',  targetWeight: 15.21, currentPrice: 762.50, dayChangePct: 0 },
-        { symbol: 'GOOGL', targetWeight: 11.96, currentPrice: 353.78, dayChangePct: 0 },
-        { symbol: 'PLTR',  targetWeight: 6.67,  currentPrice: 208.67, dayChangePct: 0 },
-        { symbol: 'SNPS',  targetWeight: 4.77,  currentPrice: 494.51, dayChangePct: 0 },
-        { symbol: 'TSM',   targetWeight: 3.62,  currentPrice: 445.12, dayChangePct: 0 },
-        { symbol: 'SPCX',  targetWeight: 3.61,  currentPrice: 156.54, dayChangePct: 0 },
-        { symbol: 'NOW',   targetWeight: 3.02,  currentPrice: 138.61, dayChangePct: 0 },
-        { symbol: 'EOSE',  targetWeight: 1.45,  currentPrice: 2.32,   dayChangePct: 0 }
+        { symbol: 'NVDA',  sector: 'AI & Semiconductors', targetWeight: 30.69, currentPrice: 228.52, dayChangePct: 0, catalystDate: '2026-11-18', catalystStance: 'bullish', catalystNote: 'ดักสะสมก่อนงบ Q3 ออก พ.ย. ดีมานด์ชิป Blackwell โตแรง' },
+        { symbol: 'MSFT',  sector: 'Big Tech & Cloud SaaS', targetWeight: 18.99, currentPrice: 543.45, dayChangePct: 0, catalystDate: '2026-10-28', catalystStance: 'bullish', catalystNote: 'DCA ก่อนประกาศงบปลาย ต.ค. คาดรายได้ Azure AI เติบโตเด่น' },
+        { symbol: 'META',  sector: 'Big Tech & Cloud SaaS', targetWeight: 15.21, currentPrice: 762.50, dayChangePct: 0, catalystDate: '2026-10-29', catalystStance: 'bullish', catalystNote: 'เก็งงบ Q3 โฆษณา AI หนุน Margin โตต่อเนื่อง' },
+        { symbol: 'GOOGL', sector: 'Big Tech & Cloud SaaS', targetWeight: 11.96, currentPrice: 353.78, dayChangePct: 0, catalystDate: '2026-10-27', catalystStance: 'bullish', catalystNote: 'DCA ก่อนงบออก คาด Google Cloud & Search โตแกร่ง' },
+        { symbol: 'PLTR',  sector: 'Big Tech & Cloud SaaS', targetWeight: 6.67,  currentPrice: 208.67, dayChangePct: 0, catalystDate: '2026-11-03', catalystStance: 'bullish', catalystNote: 'สัญญา AIP ภาครัฐและเอกชนสหรัฐฯ ขยายตัวต่อเนื่อง' },
+        { symbol: 'SNPS',  sector: 'AI & Semiconductors', targetWeight: 4.77,  currentPrice: 494.51, dayChangePct: 0, catalystDate: '2026-12-02', catalystStance: 'neutral', catalystNote: 'ทยอยสะสมตามรอบ ซอฟต์แวร์ออกแบบชิป EDA เป็นหัวใจ AI' },
+        { symbol: 'TSM',   sector: 'AI & Semiconductors', targetWeight: 3.62,  currentPrice: 445.12, dayChangePct: 0, catalystDate: '2026-10-16', catalystStance: 'bullish', catalystNote: 'รับอานิสงส์งบ TSMC & ยอดขายรายเดือน CoWoS เต็มกำลังผลิต' },
+        { symbol: 'SPCX',  sector: 'Space & Clean Energy', targetWeight: 3.61,  currentPrice: 156.54, dayChangePct: 0, catalystDate: '2026-10-25', catalystStance: 'bullish', catalystNote: 'DCA สะสมตามแผน รอ Catalyst ทดสอบ Starship & Starlink Direct-to-Cell' },
+        { symbol: 'NOW',   sector: 'Big Tech & Cloud SaaS', targetWeight: 3.02,  currentPrice: 138.61, dayChangePct: 0, catalystDate: '2026-10-23', catalystStance: 'bullish', catalystNote: 'DCA ก่อนงบ 23 ต.ค. คาดยอดจอง Now Assist AI โตเกินคาด' },
+        { symbol: 'EOSE',  sector: 'Space & Clean Energy', targetWeight: 1.45,  currentPrice: 2.32,   dayChangePct: 0, catalystDate: '2026-11-05', catalystStance: 'dip',     catalystNote: 'ทยอยถัวเฉลี่ยไม้เล็ก รอความคืบหน้าสายการผลิต Z3 & ยอด Backlog' }
       ],
       transactions: [
         { id: 101, symbol: 'NVDA',  date: '2026-10-14', buyPrice: 149.5844, amountUSD: 653.28, fxRate: 33.52, shares: 4.3672997, note: 'Dime! ยอดสะสมตั้งต้น' },
@@ -348,10 +554,26 @@
       ]
     };
 
-    const STORAGE_KEY = 'max_minimal_portfolio_v5';
+    const STORAGE_KEY = 'max_smart_portfolio_v6';
     const CONFIG_KEY = 'max_portfolio_cloud_config';
 
     let state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || JSON.parse(JSON.stringify(DEFAULT_STATE));
+    // Ensure new catalyst & sector fields exist on upgraded state
+    state.stocks.forEach(s => {
+      const def = DEFAULT_STATE.stocks.find(d => d.symbol === s.symbol);
+      if (def) {
+        if (!s.sector) s.sector = def.sector;
+        if (!s.catalystDate) s.catalystDate = def.catalystDate;
+        if (!s.catalystStance) s.catalystStance = def.catalystStance;
+        if (!s.catalystNote) s.catalystNote = def.catalystNote;
+      } else {
+        if (!s.sector) s.sector = 'Big Tech & Cloud SaaS';
+        if (!s.catalystDate) s.catalystDate = new Date().toISOString().slice(0, 10);
+        if (!s.catalystStance) s.catalystStance = 'bullish';
+        if (!s.catalystNote) s.catalystNote = 'DCA สะสมตามแผน';
+      }
+    });
+
     let config = JSON.parse(localStorage.getItem(CONFIG_KEY)) || {
       ghOwner: 'JOWMAX9043',
       ghRepo: 'My-portfolio',
@@ -363,6 +585,8 @@
 
     let allocChart = null;
     let benchChart = null;
+    let simChart = null;
+    let currentBreakevenSym = null;
 
     function saveState(autoSync = true) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -371,13 +595,23 @@
       }
     }
 
+    // Privacy Mask Helper
+    function fmtMoney(str) {
+      return state.privacyMode ? '••••••' : str;
+    }
+
+    function togglePrivacy() {
+      state.privacyMode = !state.privacyMode;
+      document.getElementById('privacyText').textContent = state.privacyMode ? 'แสดงยอดเงิน' : 'ซ่อนยอดเงิน';
+      renderAll();
+    }
+
     // =========================================================================
-    // 2. MULTI-PROXY AUTO FETCH (แก้ปัญหาโดนบล็อก / ราคาไม่อัปเดตหลังวันที่ 14)
+    // 2. MULTI-PROXY AUTO FETCH (ดึงราคาหุ้นและค่าเงินสดทุกครั้ง)
     // =========================================================================
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
     async function fetchLiveQuoteMultiFallback(symbol) {
-      // ช่องทางที่ 1: หากมี Finnhub Key (เร็วและเสถียรที่สุด)
       if (config.finnhubKey) {
         try {
           const r = await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${config.finnhubKey}`, { cache: 'no-store' });
@@ -388,7 +622,6 @@
         } catch (e) {}
       }
 
-      // ช่องทางที่ 2, 3, 4: สลับใช้ 3 Public CORS Proxies ดึงจาก Yahoo Finance
       const yahooUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=2d&_=${Date.now()}`;
       const proxies = [
         `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(yahooUrl)}`,
@@ -399,7 +632,7 @@
       for (const proxy of proxies) {
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 5500);
+          const timer = setTimeout(() => controller.abort(), 5000);
           const res = await fetch(proxy, { signal: controller.signal, cache: 'no-store' });
           clearTimeout(timer);
           if (!res.ok) continue;
@@ -412,9 +645,7 @@
             const changePct = prev > 0 ? parseFloat((((price - prev) / prev) * 100).toFixed(2)) : 0;
             return { price, changePct };
           }
-        } catch (e) {
-          // ถ้า Proxy ตัวนี้ติด Limit ให้ข้ามไปลองตัวถัดไปทันที
-        }
+        } catch (e) {}
       }
       return null;
     }
@@ -431,20 +662,14 @@
       btn.disabled = true;
       progContainer.classList.remove('hidden');
       progBar.style.width = '8%';
-      badgeEl.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5';
-      dotEl.className = 'w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping';
       badgeText.textContent = 'กำลังอัปเดตราคาสด...';
 
-      // 1. ดึงค่าเงิน USD/THB เรียลไทม์
       try {
         const fxRes = await fetch(`https://open.er-api.com/v6/latest/USD?_=${Date.now()}`);
         const fxData = await fxRes.json();
-        if (fxData?.rates?.THB) {
-          state.fxRate = parseFloat(fxData.rates.THB.toFixed(2));
-        }
+        if (fxData?.rates?.THB) state.fxRate = parseFloat(fxData.rates.THB.toFixed(2));
       } catch (e) {}
 
-      // 2. ดึงราคาหุ้นทีละตัว (Staggered) เพื่อไม่ให้โดนบล็อก Rate Limit
       let updatedCount = 0;
       const totalStocks = state.stocks.length;
 
@@ -458,13 +683,11 @@
           s.currentPrice = quote.price;
           s.dayChangePct = quote.changePct;
           updatedCount++;
-          renderAll(); // อัปเดตตัวเลขบนหน้าจอทันทีที่ได้ราคาแต่ละตัว
+          renderAll();
         }
-        if (!config.finnhubKey) await sleep(220); // หน่วงเวลาเล็กน้อยกันโดนบล็อก
+        if (!config.finnhubKey) await sleep(200);
       }
 
-      // 3. ดึงดัชนี SPY (S&P 500) และ QQQ (NASDAQ)
-      statusEl.textContent = `กำลังดึงดัชนี S&P 500 (SPY) และ NASDAQ (QQQ)...`;
       const spyQuote = await fetchLiveQuoteMultiFallback('SPY');
       if (spyQuote) state.benchmarks.spyPrice = spyQuote.price;
       const qqqQuote = await fetchLiveQuoteMultiFallback('QQQ');
@@ -478,14 +701,11 @@
         badgeEl.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5';
         dotEl.className = 'w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse';
         badgeText.textContent = `Live (${updatedCount}/${totalStocks} หุ้น)`;
-        statusEl.textContent = `✅ อัปเดตราคาตลาดล่าสุดเรียบร้อยเมื่อ ${nowStr} น. • เรท 1 USD = ฿${state.fxRate}`;
-        // บันทึกราคาล่าสุดลงเครื่อง (และขึ้น GitHub หากเปิด Auto-Sync)
+        statusEl.textContent = `✅ อัปเดตราคาตลาดล่าสุดเรียบร้อยเมื่อ ${nowStr} น. • ค่าเงิน 1 USD = ฿${state.fxRate}`;
         saveState(true);
       } else {
-        badgeEl.className = 'text-[11px] px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center gap-1.5';
-        dotEl.className = 'w-1.5 h-1.5 rounded-full bg-rose-400';
-        badgeText.textContent = 'Proxy คิวเต็ม';
-        statusEl.textContent = `⚠️ เซิร์ฟเวอร์ฟรีคิวเต็มชั่วคราว แนะนำใส่ Finnhub API Key (ฟรี) ในปุ่ม ⚙️ เพื่อให้ดึงราคาติด 100% ครับ`;
+        badgeText.textContent = 'Offline / Cached';
+        statusEl.textContent = `แสดงข้อมูลล่าสุดในเครื่อง • ค่าเงิน 1 USD = ฿${state.fxRate}`;
       }
 
       btn.disabled = false;
@@ -493,7 +713,7 @@
     }
 
     // =========================================================================
-    // 3. PORTFOLIO CALCULATIONS & MINIMAL UI RENDER
+    // 3. PORTFOLIO CALCULATIONS (WITH FX vs STOCK PROFIT BREAKDOWN)
     // =========================================================================
     function getShares(t) {
       return (typeof t.shares === 'number' && t.shares > 0) ? t.shares : (t.amountUSD / t.buyPrice);
@@ -515,11 +735,16 @@
         const profitUSD = marketValueUSD - costUSD;
         const profitPct = costUSD > 0 ? (profitUSD / costUSD) * 100 : 0;
 
+        // คำนวณ % ที่ต้องขึ้นเพื่อหลุดดอย (Recovery %)
+        const recoveryPct = (s.currentPrice > 0 && avgCost > s.currentPrice)
+          ? ((avgCost - s.currentPrice) / s.currentPrice) * 100
+          : 0;
+
         totalCostUSD += costUSD;
         totalCostTHB += costTHB;
         totalValueUSD += marketValueUSD;
 
-        return { ...s, shares, avgCost, costUSD, costTHB, marketValueUSD, profitUSD, profitPct, txCount: txs.length };
+        return { ...s, shares, avgCost, costUSD, costTHB, marketValueUSD, profitUSD, profitPct, recoveryPct, txCount: txs.length };
       });
 
       items.forEach(i => {
@@ -531,28 +756,38 @@
       const totalReturnUSD = totalValueUSD - totalCostUSD;
       const totalReturnPct = totalCostUSD > 0 ? (totalReturnUSD / totalCostUSD) * 100 : 0;
 
-      return { items, totalCostUSD, totalCostTHB, totalValueUSD, totalValueTHB, totalReturnUSD, totalReturnPct };
+      // แยกกำไรจากราคาหุ้นเพียวๆ vs กำไร/ขาดทุนจากค่าเงิน (FX Impact)
+      const avgHistoricalFx = totalCostUSD > 0 ? (totalCostTHB / totalCostUSD) : state.fxRate;
+      const pureStockGainTHB = totalReturnUSD * avgHistoricalFx;
+      const fxImpactTHB = (state.fxRate - avgHistoricalFx) * totalValueUSD;
+
+      return { items, totalCostUSD, totalCostTHB, totalValueUSD, totalValueTHB, totalReturnUSD, totalReturnPct, pureStockGainTHB, fxImpactTHB };
     }
 
     function renderAll() {
       const sum = calculatePortfolio();
 
       document.getElementById('fxDisplay').textContent = `1 USD = ฿${state.fxRate.toFixed(2)}`;
-      document.getElementById('totalValueUSD').textContent = `$${sum.totalValueUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      document.getElementById('totalValueTHB').textContent = `≈ ฿${sum.totalValueTHB.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      document.getElementById('totalCostUSD').textContent = `$${sum.totalCostUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      document.getElementById('totalCostTHB').textContent = `≈ ฿${sum.totalCostTHB.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`;
-      document.getElementById('lotsCountBadge').textContent = `${state.transactions.length} รายการ`;
+      document.getElementById('totalValueUSD').textContent = fmtMoney(`$${sum.totalValueUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+      document.getElementById('totalValueTHB').textContent = fmtMoney(`≈ ฿${sum.totalValueTHB.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+      document.getElementById('totalCostUSD').textContent = fmtMoney(`$${sum.totalCostUSD.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+      document.getElementById('totalCostTHB').textContent = fmtMoney(`≈ ฿${sum.totalCostTHB.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`);
+      document.getElementById('lotsCountBadge').textContent = `${state.transactions.length} ไม้`;
 
       const sign = sum.totalReturnUSD >= 0 ? '+' : '';
       const color = sum.totalReturnUSD >= 0 ? 'text-emerald-400' : 'text-rose-400';
       document.getElementById('totalReturnPct').className = `text-3xl font-bold tracking-tight ${color}`;
       document.getElementById('totalReturnPct').textContent = `${sign}${sum.totalReturnPct.toFixed(2)}%`;
       document.getElementById('totalReturnUSD').className = `text-sm font-mono font-medium ${color}`;
-      document.getElementById('totalReturnUSD').textContent = `(${sign}$${sum.totalReturnUSD.toFixed(2)})`;
+      document.getElementById('totalReturnUSD').textContent = fmtMoney(`(${sign}$${sum.totalReturnUSD.toFixed(2)})`);
 
-      const profitTHB = sum.totalValueTHB - sum.totalCostTHB;
-      document.getElementById('totalReturnTHB').textContent = `${profitTHB >= 0 ? '+' : ''}฿${profitTHB.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      // FX vs Stock Breakdown
+      const stkSign = sum.pureStockGainTHB >= 0 ? '+' : '';
+      const fxSign = sum.fxImpactTHB >= 0 ? '+' : '';
+      document.getElementById('pureStockGainTHB').className = `font-mono ${sum.pureStockGainTHB >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+      document.getElementById('pureStockGainTHB').textContent = fmtMoney(`${stkSign}฿${sum.pureStockGainTHB.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`);
+      document.getElementById('fxImpactTHB').className = `font-mono ${sum.fxImpactTHB >= 0 ? 'text-sky-400' : 'text-amber-400'}`;
+      document.getElementById('fxImpactTHB').textContent = fmtMoney(`${fxSign}฿${sum.fxImpactTHB.toLocaleString('th-TH', { maximumFractionDigits: 0 })}`);
 
       // Benchmarks
       const sp = state.benchmarks.sp500;
@@ -594,10 +829,14 @@
         const daySign = dayChg >= 0 ? '+' : '';
         const dayBadge = dayChg !== 0 ? `<span class="block text-[10px] font-mono ${dayColor}">${daySign}${dayChg.toFixed(2)}% วันนี้</span>` : '';
 
+        const recoveryBadge = s.recoveryPct > 0
+          ? `<button onclick="openBreakevenModal('${s.symbol}')" class="mt-0.5 inline-block text-[10px] bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 px-1.5 py-0.5 rounded transition" title="คลิกเพื่อจำลองการถัวเฉลี่ย">🎯 ต้องขึ้น +${s.recoveryPct.toFixed(1)}% (ถัวเฉลี่ย)</button>`
+          : '';
+
         let statusHtml = `<span class="text-xs text-slate-400">สมดุล ✅</span>`;
-        if (s.diff < -0.5) {
+        if (s.diff < -0.4) {
           const buyMore = ((s.targetWeight / 100) * sum.totalValueUSD) - s.marketValueUSD;
-          statusHtml = `<button onclick="quickDcaFor('${s.symbol}', ${Math.max(10, buyMore).toFixed(0)})" class="text-xs bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 px-2.5 py-1 rounded-lg transition">+ เติม ~$${Math.max(0, buyMore).toFixed(0)}</button>`;
+          statusHtml = `<button onclick="quickDcaFor('${s.symbol}', ${Math.max(10, buyMore).toFixed(0)}, '${s.catalystNote || ''}')" class="text-xs bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 px-2.5 py-1 rounded-lg transition">+ เติม ~$${Math.max(0, buyMore).toFixed(0)}</button>`;
         } else if (s.diff > 0.8) {
           statusHtml = `<span class="text-xs text-amber-400">เกินเป้า +${s.diff.toFixed(1)}%</span>`;
         }
@@ -610,20 +849,22 @@
               <span class="font-bold text-white">${s.symbol}</span>
               <button onclick="jumpToHistory('${s.symbol}')" class="text-[10px] text-slate-400 hover:text-sky-400 bg-slate-800/80 px-1.5 py-0.5 rounded">${s.shares.toFixed(4)} หุ้น</button>
             </div>
+            <span class="text-[10px] text-slate-500 block mt-0.5">${s.sector || ''}</span>
           </td>
           <td class="py-3.5 px-3 text-right">
             <input type="number" step="any" value="${s.currentPrice}" onchange="inlinePrice(${idx}, this.value)"
               class="w-20 px-1.5 py-0.5 text-right font-mono text-xs text-amber-300 font-semibold bg-transparent border-transparent hover:border-slate-700 focus:bg-slate-900">
             ${dayBadge}
           </td>
-          <td class="py-3.5 px-3 text-right font-mono text-xs text-slate-400">$${s.avgCost.toFixed(2)}</td>
+          <td class="py-3.5 px-3 text-right font-mono text-xs text-slate-300">$${s.avgCost.toFixed(2)}</td>
           <td class="py-3.5 px-3 text-right font-mono">
-            <div class="text-white font-medium">$${s.marketValueUSD.toFixed(2)}</div>
-            <div class="text-[11px] text-slate-500">฿${(s.marketValueUSD * state.fxRate).toLocaleString('th-TH', { maximumFractionDigits: 0 })}</div>
+            <div class="text-white font-medium">${fmtMoney('$' + s.marketValueUSD.toFixed(2))}</div>
+            <div class="text-[11px] text-slate-500">${fmtMoney('฿' + (s.marketValueUSD * state.fxRate).toLocaleString('th-TH', { maximumFractionDigits: 0 }))}</div>
           </td>
           <td class="py-3.5 px-3 text-right font-mono ${pColor}">
             <div class="font-medium">${pSign}${s.profitPct.toFixed(2)}%</div>
-            <div class="text-[11px]">${pSign}$${s.profitUSD.toFixed(2)}</div>
+            <div class="text-[11px]">${fmtMoney(pSign + '$' + s.profitUSD.toFixed(2))}</div>
+            ${recoveryBadge}
           </td>
           <td class="py-3.5 px-4">
             <div class="flex items-center justify-between text-xs mb-1">
@@ -643,23 +884,355 @@
       });
 
       populateDropdowns();
+      renderSmartDca(sum);
       renderDcaHistory();
-      renderCharts(sum);
+      renderSimulator(sum);
+      renderSectorAndCharts(sum);
     }
 
     // =========================================================================
-    // 4. MINIMAL TABS & 1-CLICK DCA
+    // 4. SMART CATALYST DCA ALLOCATOR (แบ่งเงินตามสัดส่วน + วันประกาศงบเดือนนั้นๆ)
+    // =========================================================================
+    function convertSmartBudgetCurrency() {
+      const cur = document.getElementById('smartCurrency').value;
+      const input = document.getElementById('smartBudgetInput');
+      const val = parseFloat(input.value) || 0;
+      if (cur === 'USD') {
+        input.value = (val / state.fxRate).toFixed(2);
+      } else {
+        input.value = Math.round(val * state.fxRate);
+      }
+      renderSmartDca();
+    }
+
+    function calculateSmartAllocations(sum) {
+      const rawBudget = parseFloat(document.getElementById('smartBudgetInput').value) || 0;
+      const currency = document.getElementById('smartCurrency').value;
+      const mode = document.getElementById('smartStrategyMode').value;
+      const budgetUSD = currency === 'THB' ? (rawBudget / state.fxRate) : rawBudget;
+
+      // คำนวณคะแนนน้ำหนัก (Score) ของแต่ละหุ้นตามโหมดและ Catalyst
+      const futureTotalUSD = sum.totalValueUSD + budgetUSD;
+      const scores = sum.items.map(s => {
+        let baseNeed = 0;
+        if (mode === 'target') {
+          baseNeed = s.targetWeight;
+        } else if (mode === 'rebalance') {
+          const idealVal = (s.targetWeight / 100) * futureTotalUSD;
+          baseNeed = Math.max(0, idealVal - s.marketValueUSD);
+        } else {
+          // โหมดผสม Catalyst Boost: ดูทั้งสัดส่วนที่ขาด + น้ำหนักพื้นฐาน + ตัวคูณวันประกาศงบ
+          const idealVal = (s.targetWeight / 100) * futureTotalUSD;
+          const gap = Math.max(0, idealVal - s.marketValueUSD);
+          baseNeed = (gap * 0.65) + ((s.targetWeight / 100) * budgetUSD * 0.35);
+
+          // Catalyst Multiplier
+          let mult = 1.0;
+          if (s.catalystStance === 'bullish') mult = 1.35; // งบคาดว่าจะออกมาดี เพิ่มน้ำหนัก 35%
+          else if (s.catalystStance === 'dip') mult = 1.15; // จังหวะย่อตัวน่าสะสม
+          else if (s.catalystStance === 'wait') mult = 0.0; // ชะลอการซื้อรอบนี้
+          baseNeed = baseNeed * mult;
+        }
+        return Math.max(0, baseNeed);
+      });
+
+      const totalScore = scores.reduce((a, b) => a + b, 0);
+      return sum.items.map((s, idx) => {
+        const allocUSD = totalScore > 0 ? (scores[idx] / totalScore) * budgetUSD : 0;
+        const allocTHB = allocUSD * state.fxRate;
+        const estShares = s.currentPrice > 0 ? (allocUSD / s.currentPrice) : 0;
+        return { ...s, allocUSD, allocTHB, estShares, idx };
+      });
+    }
+
+    function renderSmartDca(sumObj = null) {
+      const sum = sumObj || calculatePortfolio();
+      const plans = calculateSmartAllocations(sum);
+
+      const rawBudget = parseFloat(document.getElementById('smartBudgetInput').value) || 0;
+      const currency = document.getElementById('smartCurrency').value;
+      const budgetUSD = currency === 'THB' ? (rawBudget / state.fxRate) : rawBudget;
+      const budgetTHB = budgetUSD * state.fxRate;
+
+      const activeStocks = plans.filter(p => p.allocUSD >= 1).length;
+      document.getElementById('smartSummaryStrip').innerHTML = `
+        <div>💰 งบลงทุนรวมรอบนี้: <b class="text-emerald-400 font-mono">$${budgetUSD.toFixed(2)}</b> <span class="text-slate-400">(≈ ฿${budgetTHB.toLocaleString('th-TH', { maximumFractionDigits: 0 })})</span></div>
+        <div>🎯 กระจายเข้าซื้อ: <b class="text-sky-400">${activeStocks} หุ้น</b> ตามลำดับวัน Catalyst</div>
+        <div class="text-slate-400">💡 ปรับเปลี่ยน "มุมมองงบ" หรือ "วันที่ประกาศงบ" ในตารางเพื่อให้ระบบคำนวณน้ำหนักใหม่ได้ทันที</div>
+      `;
+
+      const tbody = document.getElementById('smartDcaBody');
+      tbody.innerHTML = '';
+
+      plans.forEach(p => {
+        const diffSign = p.diff >= 0 ? '+' : '';
+        const diffColor = p.diff < -0.4 ? 'text-sky-400' : (p.diff > 0.8 ? 'text-amber-400' : 'text-slate-400');
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/35 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <span class="font-bold text-white">${p.symbol}</span>
+            <span class="block text-[10px] font-mono text-amber-300">$${p.currentPrice}</span>
+          </td>
+          <td class="py-3 px-2 font-mono text-xs">
+            <span class="text-white">${p.actualWeight.toFixed(1)}%</span> / <span class="text-slate-400">${p.targetWeight}%</span>
+            <span class="block text-[10px] ${diffColor}">(${diffSign}${p.diff.toFixed(1)}%)</span>
+          </td>
+          <td class="py-3 px-3">
+            <input type="date" value="${p.catalystDate || ''}" onchange="updateCatalyst(${p.idx}, 'catalystDate', this.value)"
+              class="text-xs px-2 py-1 font-mono text-sky-300">
+          </td>
+          <td class="py-3 px-3">
+            <select onchange="updateCatalyst(${p.idx}, 'catalystStance', this.value)" class="text-xs px-2 py-1 font-medium">
+              <option value="bullish" ${p.catalystStance === 'bullish' ? 'selected' : ''}>🔥 คาดงบดีมาก (เน้นเพิ่มน้ำหนัก +35%)</option>
+              <option value="dip" ${p.catalystStance === 'dip' ? 'selected' : ''}>💎 ราคาลงลึก/เก็บของถูก (+15%)</option>
+              <option value="neutral" ${p.catalystStance === 'neutral' ? 'selected' : ''}>⚖️ สะสมปกติตามสัดส่วน (100%)</option>
+              <option value="wait" ${p.catalystStance === 'wait' ? 'selected' : ''}>⏸️ ข้ามรอบนี้ / รอหลังงบออก (0%)</option>
+            </select>
+          </td>
+          <td class="py-3 px-3">
+            <input type="text" value="${p.catalystNote || ''}" onchange="updateCatalyst(${p.idx}, 'catalystNote', this.value)"
+              placeholder="เช่น DCA วันที่ 14 เพราะ MSFT ประกาศงบ..."
+              class="w-full min-w-[210px] text-xs px-2.5 py-1 text-slate-200 bg-slate-900/70 border-slate-700">
+          </td>
+          <td class="py-3 px-3 text-right font-mono">
+            <div class="font-bold ${p.allocUSD >= 1 ? 'text-emerald-400' : 'text-slate-500'}">$${p.allocUSD.toFixed(2)}</div>
+            <div class="text-[11px] text-slate-400">≈ ฿${p.allocTHB.toLocaleString('th-TH', { maximumFractionDigits: 0 })} (${p.estShares.toFixed(4)} หุ้น)</div>
+          </td>
+          <td class="py-3 px-3 text-center">
+            <button onclick="quickDcaFor('${p.symbol}', ${p.allocUSD.toFixed(2)}, '${(p.catalystNote || '').replace(/'/g, '')}', '${p.catalystDate || ''}')"
+              class="text-xs bg-sky-500/20 hover:bg-sky-500 text-sky-300 hover:text-slate-950 font-semibold px-2.5 py-1 rounded-lg transition">
+              + ซื้อไม้นี้
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateCatalyst(idx, field, val) {
+      state.stocks[idx][field] = val;
+      saveState();
+      renderSmartDca();
+    }
+
+    function executeBatchSmartDca() {
+      const sum = calculatePortfolio();
+      const plans = calculateSmartAllocations(sum).filter(p => p.allocUSD >= 1);
+      if (plans.length === 0) return alert('ยังไม่มีรายการที่มียอดจัดสรรครับ');
+
+      if (!confirm(`ยืนยันการบันทึกไม้ DCA ทั้งหมด ${plans.length} รายการ (รวม $${plans.reduce((a,b)=>a+b.allocUSD,0).toFixed(2)}) เข้าสู่ประวัติพอร์ตทันทีใช่หรือไม่?`)) return;
+
+      plans.forEach((p, i) => {
+        const buyDate = p.catalystDate || new Date().toISOString().slice(0, 10);
+        const amountUSD = parseFloat(p.allocUSD.toFixed(2));
+        const buyPrice = p.currentPrice;
+        state.transactions.push({
+          id: Date.now() + i,
+          symbol: p.symbol,
+          date: buyDate,
+          buyPrice,
+          amountUSD,
+          fxRate: state.fxRate,
+          shares: amountUSD / buyPrice,
+          note: p.catalystNote || 'Smart DCA Allocator'
+        });
+      });
+
+      saveState();
+      renderAll();
+      switchTab('dca');
+      alert('✅ บันทึกไม้ DCA ทั้งชุดพร้อมเหตุผล Catalyst เรียบร้อยแล้ว!');
+    }
+
+    // =========================================================================
+    // 5. BREAKEVEN & AVG DOWN HELPER MODAL
+    // =========================================================================
+    function openBreakevenModal(symbol) {
+      currentBreakevenSym = symbol;
+      document.getElementById('beTitle').textContent = `🎯 คำนวณถัวเฉลี่ยหลุดดอย (${symbol})`;
+      document.getElementById('breakevenModal').classList.remove('hidden');
+      document.getElementById('breakevenModal').classList.add('flex');
+      calcBreakevenSim();
+    }
+
+    function closeBreakevenModal() {
+      document.getElementById('breakevenModal').classList.add('hidden');
+      document.getElementById('breakevenModal').classList.remove('flex');
+    }
+
+    function calcBreakevenSim() {
+      if (!currentBreakevenSym) return;
+      const sum = calculatePortfolio();
+      const item = sum.items.find(i => i.symbol === currentBreakevenSym);
+      if (!item) return;
+
+      const addUSD = parseFloat(document.getElementById('beSimUSD').value) || 0;
+      const addShares = item.currentPrice > 0 ? (addUSD / item.currentPrice) : 0;
+      const newTotalShares = item.shares + addShares;
+      const newTotalCost = item.costUSD + addUSD;
+      const newAvgCost = newTotalShares > 0 ? (newTotalCost / newTotalShares) : 0;
+      const newRecoveryPct = item.currentPrice > 0 ? (((newAvgCost - item.currentPrice) / item.currentPrice) * 100) : 0;
+
+      document.getElementById('beOldAvg').textContent = `$${item.avgCost.toFixed(4)}`;
+      document.getElementById('beCurPrice').textContent = `$${item.currentPrice.toFixed(4)}`;
+
+      document.getElementById('beResultBox').innerHTML = `
+        <div class="flex justify-between">
+          <span class="text-slate-300">จำนวนหุ้นที่ได้เพิ่ม:</span>
+          <b class="font-mono text-sky-400">+${addShares.toFixed(5)} หุ้น</b>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-300">ต้นทุนเฉลี่ยใหม่จะลดเหลือ:</span>
+          <b class="font-mono text-emerald-400 text-sm">$${newAvgCost.toFixed(4)} / หุ้น</b>
+        </div>
+        <div class="flex justify-between pt-1 border-t border-slate-800">
+          <span class="text-slate-400">ระยะห่างจุดคุ้มทุน (Breakeven):</span>
+          <b class="font-mono text-amber-300">เหลือต้องขึ้นอีก +${Math.max(0, newRecoveryPct).toFixed(1)}% (จากเดิม +${item.recoveryPct.toFixed(1)}%)</b>
+        </div>
+      `;
+
+      document.getElementById('beActionBtn').onclick = () => {
+        closeBreakevenModal();
+        quickDcaFor(currentBreakevenSym, addUSD, `ถัวเฉลี่ยลดต้นทุนเหลือ $${newAvgCost.toFixed(2)}`);
+      };
+    }
+
+    // =========================================================================
+    // 6. 10-YEAR WEALTH & CAGR SIMULATOR
+    // =========================================================================
+    function renderSimulator(sumObj = null) {
+      const sum = sumObj || calculatePortfolio();
+      const monthlyTHB = parseFloat(document.getElementById('simMonthlyTHB').value) || 0;
+      const cagr = parseFloat(document.getElementById('simCagr').value) || 20;
+      const years = parseInt(document.getElementById('simYears').value) || 10;
+
+      document.getElementById('simDcaTHBLabel').textContent = `฿${monthlyTHB.toLocaleString()} / เดือน`;
+      document.getElementById('simCagrLabel').textContent = `${cagr}% / ปี`;
+      document.getElementById('simYearsLabel').textContent = `${years} ปี`;
+
+      const startTHB = sum.totalValueTHB;
+      const monthlyRate = (cagr / 100) / 12;
+
+      const labels = ['วันนี้'];
+      const wealthSeries = [Math.round(startTHB)];
+      const principalSeries = [Math.round(startTHB)];
+
+      let curWealth = startTHB;
+      let curPrincipal = startTHB;
+
+      for (let y = 1; y <= years; y++) {
+        for (let m = 1; m <= 12; m++) {
+          curWealth = (curWealth + monthlyTHB) * (1 + monthlyRate);
+          curPrincipal += monthlyTHB;
+        }
+        labels.push(`ปีที่ ${y}`);
+        wealthSeries.push(Math.round(curWealth));
+        principalSeries.push(Math.round(curPrincipal));
+      }
+
+      document.getElementById('simStartVal').textContent = `฿${Math.round(startTHB).toLocaleString('th-TH')}`;
+      document.getElementById('simTotalPrincipal').textContent = `฿${Math.round(curPrincipal).toLocaleString('th-TH')}`;
+      document.getElementById('simFinalValue').textContent = `฿${Math.round(curWealth).toLocaleString('th-TH')} ($${(curWealth / state.fxRate).toLocaleString('en-US', { maximumFractionDigits: 0 })})`;
+      const mult = curPrincipal > 0 ? (curWealth / curPrincipal) : 1;
+      document.getElementById('simProfitMultiplier').textContent = `พอร์ตโต ${mult.toFixed(2)}x ของเงินต้น`;
+
+      const ctxSim = document.getElementById('simChart').getContext('2d');
+      if (simChart) simChart.destroy();
+      simChart = new Chart(ctxSim, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: 'มูลค่าพอร์ตรวมทบต้น (฿)', data: wealthSeries, borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.12)', fill: true, tension: 0.35 },
+            { label: 'เงินต้นสะสมที่ใส่เข้าไป (฿)', data: principalSeries, borderColor: '#64748b', borderDash: [5, 5], fill: false, tension: 0.1 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { labels: { color: '#cbd5e1' } } },
+          scales: {
+            y: { ticks: { color: '#64748b', callback: v => '฿' + (v / 1000).toFixed(0) + 'k' }, grid: { color: '#1e293b' } },
+            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // =========================================================================
+    // 7. SECTOR THEME GROUPING & CHARTS
+    // =========================================================================
+    function renderSectorAndCharts(sum) {
+      const sectorMap = {};
+      sum.items.forEach(i => {
+        const sec = i.sector || 'Other';
+        if (!sectorMap[sec]) sectorMap[sec] = { valUSD: 0, stocks: [] };
+        sectorMap[sec].valUSD += i.marketValueUSD;
+        sectorMap[sec].stocks.push(i.symbol);
+      });
+
+      const sectorGrid = document.getElementById('sectorCardsGrid');
+      sectorGrid.innerHTML = '';
+      Object.keys(sectorMap).forEach(sec => {
+        const info = sectorMap[sec];
+        const pct = sum.totalValueUSD > 0 ? (info.valUSD / sum.totalValueUSD) * 100 : 0;
+        const card = document.createElement('div');
+        card.className = 'glass p-4';
+        card.innerHTML = `
+          <div class="flex justify-between items-center text-xs text-slate-400">
+            <span class="font-semibold text-sky-400">🏷️ ${sec}</span>
+            <span class="font-mono font-bold text-white text-sm">${pct.toFixed(1)}%</span>
+          </div>
+          <div class="text-lg font-bold text-white mt-1 font-mono">${fmtMoney('$' + info.valUSD.toFixed(2))}</div>
+          <div class="text-[11px] text-slate-400 mt-1">หุ้นในกลุ่ม: <b class="text-slate-200">${info.stocks.join(', ')}</b></div>
+        `;
+        sectorGrid.appendChild(card);
+      });
+
+      const ctxA = document.getElementById('allocChart').getContext('2d');
+      if (allocChart) allocChart.destroy();
+      allocChart = new Chart(ctxA, {
+        type: 'bar',
+        data: {
+          labels: sum.items.map(i => i.symbol),
+          datasets: [
+            { label: 'สัดส่วนจริง (%)', data: sum.items.map(i => i.actualWeight.toFixed(2)), backgroundColor: '#38bdf8', borderRadius: 4 },
+            { label: 'เป้าหมาย (%)', data: sum.items.map(i => i.targetWeight.toFixed(2)), backgroundColor: '#334155', borderRadius: 4 }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }, x: { ticks: { color: '#e2e8f0' }, grid: { display: false } } } }
+      });
+
+      const ctxB = document.getElementById('benchChart').getContext('2d');
+      if (benchChart) benchChart.destroy();
+      benchChart = new Chart(ctxB, {
+        type: 'bar',
+        data: {
+          labels: ['Max Port', 'S&P 500', 'NASDAQ'],
+          datasets: [{ data: [sum.totalReturnPct.toFixed(2), state.benchmarks.sp500, state.benchmarks.nasdaq], backgroundColor: ['#38bdf8', '#fbbf24', '#c084fc'], borderRadius: 6 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }, x: { ticks: { color: '#e2e8f0' }, grid: { display: false } } } }
+      });
+    }
+
+    // =========================================================================
+    // 8. TABS, DCA HISTORY & MODALS
     // =========================================================================
     function switchTab(tab) {
-      ['portfolio', 'dca', 'chart'].forEach(t => {
-        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.toggle('hidden', t !== tab);
+      ['portfolio', 'smartdca', 'dca', 'simulator', 'chart'].forEach(t => {
+        const el = document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const btn = document.getElementById(`tabBtn${t.charAt(0).toUpperCase() + t.slice(1)}`);
-        if (t === tab) {
-          btn.classList.add('tab-active');
-          btn.classList.remove('text-slate-400');
-        } else {
-          btn.classList.remove('tab-active');
-          btn.classList.add('text-slate-400');
+        if (el) el.classList.toggle('hidden', t !== tab);
+        if (btn) {
+          if (t === tab) {
+            btn.classList.add('tab-active');
+            btn.classList.remove('text-slate-400');
+          } else {
+            btn.classList.remove('tab-active');
+            btn.classList.add('text-slate-400');
+          }
         }
       });
     }
@@ -681,21 +1254,25 @@
       filterSym.value = curFilter;
     }
 
-    function openDcaModal(defaultSym = null, defaultUSD = '') {
+    function openDcaModal(defaultSym = null, defaultUSD = '', defaultNote = '', defaultDate = '') {
       document.getElementById('editTxId').value = '';
-      document.getElementById('dcaModalTitle').textContent = '⚡ บันทึกไม้ DCA (ดึงราคาอัตโนมัติ)';
+      document.getElementById('dcaModalTitle').textContent = '⚡ บันทึกไม้ DCA';
       if (defaultSym) document.getElementById('dcaSym').value = defaultSym;
-      document.getElementById('dcaDate').valueAsDate = new Date();
+      if (defaultDate) {
+        document.getElementById('dcaDate').value = defaultDate;
+      } else {
+        document.getElementById('dcaDate').valueAsDate = new Date();
+      }
       document.getElementById('dcaFx').value = state.fxRate;
       document.getElementById('dcaUSD').value = defaultUSD;
-      document.getElementById('dcaNote').value = '';
+      document.getElementById('dcaNote').value = defaultNote;
       autoFillDcaPrice();
       document.getElementById('dcaModal').classList.remove('hidden');
       document.getElementById('dcaModal').classList.add('flex');
     }
 
-    function quickDcaFor(symbol, suggestedUSD) {
-      openDcaModal(symbol, suggestedUSD);
+    function quickDcaFor(symbol, suggestedUSD, note = '', dateStr = '') {
+      openDcaModal(symbol, suggestedUSD, note, dateStr);
     }
 
     function closeDcaModal() {
@@ -708,6 +1285,9 @@
       const found = state.stocks.find(s => s.symbol === sym);
       if (found) {
         document.getElementById('dcaPrice').value = found.currentPrice;
+        if (!document.getElementById('dcaNote').value && found.catalystNote) {
+          document.getElementById('dcaNote').value = found.catalystNote;
+        }
         updateDcaPreview();
       }
     }
@@ -744,13 +1324,11 @@
     function editTx(id) {
       const t = state.transactions.find(x => String(x.id) === String(id));
       if (!t) return;
-      openDcaModal(t.symbol, t.amountUSD);
+      openDcaModal(t.symbol, t.amountUSD, t.note || '', t.date);
       document.getElementById('editTxId').value = t.id;
       document.getElementById('dcaModalTitle').textContent = `✏️ แก้ไขไม้ DCA (${t.symbol})`;
-      document.getElementById('dcaDate').value = t.date;
       document.getElementById('dcaPrice').value = t.buyPrice;
       document.getElementById('dcaFx').value = t.fxRate || state.fxRate;
-      document.getElementById('dcaNote').value = t.note || '';
       updateDcaPreview();
     }
 
@@ -775,7 +1353,7 @@
 
       document.getElementById('dcaSummaryPills').innerHTML = `
         <span class="bg-slate-800/90 px-3 py-1 rounded-lg">จำนวน: <b class="text-white">${list.length} ไม้</b></span>
-        <span class="bg-slate-800/90 px-3 py-1 rounded-lg">เงินลงทุนรวม: <b class="text-sky-400">$${sumUSD.toFixed(2)}</b></span>
+        <span class="bg-slate-800/90 px-3 py-1 rounded-lg">เงินลงทุนรวม: <b class="text-sky-400">${fmtMoney('$' + sumUSD.toFixed(2))}</b></span>
         ${sym !== 'ALL' ? `<span class="bg-slate-800/90 px-3 py-1 rounded-lg">ต้นทุนเฉลี่ย ${sym}: <b class="text-amber-300">$\${avg.toFixed(2)}</b></span>` : ''}
       `;
 
@@ -796,10 +1374,10 @@
           <td class="py-3 px-3 font-mono text-xs text-slate-300">${t.date}</td>
           <td class="py-3 px-3 font-bold text-white">${t.symbol}</td>
           <td class="py-3 px-3 text-right font-mono text-xs">$${t.buyPrice.toFixed(2)}</td>
-          <td class="py-3 px-3 text-right font-mono text-xs">$${t.amountUSD.toFixed(2)}</td>
+          <td class="py-3 px-3 text-right font-mono text-xs">${fmtMoney('$' + t.amountUSD.toFixed(2))}</td>
           <td class="py-3 px-3 text-right font-mono text-xs text-slate-300">${sh.toFixed(5)}</td>
-          <td class="py-3 px-3 text-right font-mono text-xs ${color}">${sign}${pct.toFixed(2)}% (${sign}$${profit.toFixed(2)})</td>
-          <td class="py-3 px-3 text-xs text-slate-400">${t.note || '-'}</td>
+          <td class="py-3 px-3 text-right font-mono text-xs ${color}">${sign}${pct.toFixed(2)}% (${fmtMoney(sign + '$' + profit.toFixed(2))})</td>
+          <td class="py-3 px-3 text-xs text-slate-300">${t.note || '-'}</td>
           <td class="py-3 px-2 text-center">
             <button onclick="editTx(${t.id})" class="text-slate-400 hover:text-sky-400 mr-2">✏️</button>
             <button onclick="deleteTx(${t.id})" class="text-slate-400 hover:text-rose-400">🗑️</button>
@@ -815,36 +1393,6 @@
       renderDcaHistory();
     }
 
-    // =========================================================================
-    // 5. CHARTS & INLINE EDITS
-    // =========================================================================
-    function renderCharts(sum) {
-      const ctxA = document.getElementById('allocChart').getContext('2d');
-      if (allocChart) allocChart.destroy();
-      allocChart = new Chart(ctxA, {
-        type: 'bar',
-        data: {
-          labels: sum.items.map(i => i.symbol),
-          datasets: [
-            { label: 'สัดส่วนจริง (%)', data: sum.items.map(i => i.actualWeight.toFixed(2)), backgroundColor: '#38bdf8', borderRadius: 4 },
-            { label: 'เป้าหมาย (%)', data: sum.items.map(i => i.targetWeight.toFixed(2)), backgroundColor: '#334155', borderRadius: 4 }
-          ]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }, x: { ticks: { color: '#e2e8f0' }, grid: { display: false } } } }
-      });
-
-      const ctxB = document.getElementById('benchChart').getContext('2d');
-      if (benchChart) benchChart.destroy();
-      benchChart = new Chart(ctxB, {
-        type: 'bar',
-        data: {
-          labels: ['Max Port', 'S&P 500', 'NASDAQ'],
-          datasets: [{ data: [sum.totalReturnPct.toFixed(2), state.benchmarks.sp500, state.benchmarks.nasdaq], backgroundColor: ['#38bdf8', '#fbbf24', '#c084fc'], borderRadius: 6 }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }, x: { ticks: { color: '#e2e8f0' }, grid: { display: false } } } }
-      });
-    }
-
     function inlinePrice(idx, val) {
       const v = parseFloat(val);
       if (v > 0) { state.stocks[idx].currentPrice = v; saveState(); renderAll(); }
@@ -855,7 +1403,7 @@
     }
 
     // =========================================================================
-    // 6. GITHUB SYNC & MODALS
+    // 9. GITHUB SYNC & SETTINGS
     // =========================================================================
     function utf8ToBase64(str) { return btoa(String.fromCharCode(...new TextEncoder().encode(str))); }
     function base64ToUtf8(b64) { return new TextDecoder().decode(Uint8Array.from(atob(b64.replace(/\s/g, '')), m => m.codePointAt(0))); }
@@ -872,10 +1420,19 @@
         const decoded = JSON.parse(base64ToUtf8(data.content));
         if (decoded?.stocks && decoded?.transactions) {
           state = decoded;
-          // ตรวจสอบว่ามี TSM ครบ 10 หุ้นหรือไม่ ถ้าไฟล์เก่าบน GitHub มีแค่ 9 หุ้น ให้เติม TSM อัตโนมัติ
           if (!state.stocks.some(s => s.symbol === 'TSM')) {
             state = JSON.parse(JSON.stringify(DEFAULT_STATE));
           }
+          // Merge default catalyst metadata if missing
+          state.stocks.forEach(s => {
+            const def = DEFAULT_STATE.stocks.find(d => d.symbol === s.symbol);
+            if (def) {
+              if (!s.sector) s.sector = def.sector;
+              if (!s.catalystDate) s.catalystDate = def.catalystDate;
+              if (!s.catalystStance) s.catalystStance = def.catalystStance;
+              if (!s.catalystNote) s.catalystNote = def.catalystNote;
+            }
+          });
           localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           renderAll();
         }
@@ -895,13 +1452,13 @@
         let sha = null;
         const getRes = await fetch(`${url}?ref=${config.ghBranch || 'main'}&_=${Date.now()}`, { headers, cache: 'no-store' });
         if (getRes.ok) sha = (await getRes.json()).sha;
-        const body = { message: `Sync live portfolio (${new Date().toLocaleString('th-TH')})`, content: utf8ToBase64(JSON.stringify(state, null, 2)), branch: config.ghBranch || 'main' };
+        const body = { message: `Sync smart portfolio (${new Date().toLocaleString('th-TH')})`, content: utf8ToBase64(JSON.stringify(state, null, 2)), branch: config.ghBranch || 'main' };
         if (sha) body.sha = sha;
         const putRes = await fetch(url, { method: 'PUT', headers, body: JSON.stringify(body) });
-        btn.textContent = putRes.ok ? '☁️ ซิงค์แล้ว' : '☁️ เซฟขึ้น Cloud';
-        if (!silent && putRes.ok) alert('✅ ซิงค์ข้อมูลและราคาล่าสุดขึ้น GitHub เรียบร้อย!');
+        btn.textContent = putRes.ok ? '☁️ ซิงค์แล้ว' : '☁️ เซฟ';
+        if (!silent && putRes.ok) alert('✅ ซิงค์ข้อมูลและแผน Catalyst DCA ขึ้น GitHub เรียบร้อย!');
       } catch (e) {
-        btn.textContent = '☁️ เซฟขึ้น Cloud';
+        btn.textContent = '☁️ เซฟ';
       }
     }
 
@@ -962,7 +1519,16 @@
       if (!sym) return;
       const ticker = sym.trim().toUpperCase();
       const weight = parseFloat(prompt('สัดส่วนเป้าหมาย (%):', '5')) || 0;
-      state.stocks.push({ symbol: ticker, targetWeight: weight, currentPrice: 100, dayChangePct: 0 });
+      state.stocks.push({
+        symbol: ticker,
+        sector: 'Big Tech & Cloud SaaS',
+        targetWeight: weight,
+        currentPrice: 100,
+        dayChangePct: 0,
+        catalystDate: new Date().toISOString().slice(0, 10),
+        catalystStance: 'bullish',
+        catalystNote: 'DCA สะสมตามแผน'
+      });
       saveState();
       renderAll();
       autoUpdateAllMarketData(true);
@@ -976,7 +1542,7 @@
     }
 
     // =========================================================================
-    // INIT ON LOAD: โหลดพอร์ตจาก GitHub เสร็จ -> บังคับดึงราคาตลาดวันนี้ทับทันที!
+    // INIT ON LOAD
     // =========================================================================
     renderAll();
     syncFromGitHub(true).then(() => {
